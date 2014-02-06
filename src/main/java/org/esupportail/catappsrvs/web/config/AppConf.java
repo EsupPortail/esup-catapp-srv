@@ -6,12 +6,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import static org.esupportail.catappsrvs.web.DomaineResource.DomainResource;
+
 @Configuration
 @Import(DaoConf.class)
 public class AppConf {
 
     @Bean
-    public DomaineResource domaineResource() { return DomaineResource._; }
+    public DomaineResource domaineResource() { return DomainResource; }
 
     @Bean
     public Object testObj() { return new Object() {

@@ -198,6 +198,12 @@
                 <version>2.5.1</version>
             </dependency>
             <dependency>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-json-jackson</artifactId>
+                <version>2.5.1</version>
+            </dependency>
+            <!-- need custom component provider (SpringComponentProvider) for jersey -->
+            <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>spring-bridge</artifactId>
                 <version>2.2.0</version>
@@ -312,6 +318,10 @@
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-servlet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
