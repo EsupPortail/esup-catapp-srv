@@ -1,0 +1,12 @@
+Commandes utiles :
+
+Installation des modules dans le repo maven local :
+mvn -Drules.location=$rulesFile clean install
+
+Exec du war (en mode debug ou non) :
+cd catapp-web ; mvnDebug -Drules.location=$rulesFile jetty:run ; cd -
+cd catapp-web ; mvn -Drules.location=$rulesFile jetty:run ; cd -
+
+Création d'une release :
+mvn release:prepare -Darguments="-Drules.location=$rulesFile -DgenerateDdl=true"
+mvn release:perform -Darguments="-Drules.location=$rulesFile -DgenerateDdl=true"
