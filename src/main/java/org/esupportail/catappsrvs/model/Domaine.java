@@ -1,8 +1,11 @@
 package org.esupportail.catappsrvs.model;
 
-import lombok.Value;
-import org.esupportail.catappsrvs.model.util.hibernate.ImList;
-import org.hibernate.annotations.CollectionType;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+import lombok.experimental.Accessors;
+import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.envers.Audited;
 
@@ -12,25 +15,27 @@ import java.util.List;
 import static org.esupportail.catappsrvs.model.CommonTypes.Code;
 import static org.esupportail.catappsrvs.model.CommonTypes.Libelle;
 
-@Value(staticConstructor = "domaine")
-@Entity //@Audited
-public class Domaine {
+@EqualsAndHashCode(of = "code", doNotUseGetters = true)
+@ToString @Getter @Accessors(fluent = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Entity @Audited
+public final class Domaine {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
 	Long pk;
 
     @NaturalId
     @Embedded @Column(nullable = false)
-    Code code;
+    final Code code;
 
     @Embedded @Column
-    Libelle libelle;
+    final Libelle libelle;
 
     @ManyToOne
-    Domaine parent;
+    final Domaine parent;
 
     @OneToMany(mappedBy = "parent")
-    List<Domaine> sousDomaines;
+    final List<Domaine> sousDomaines;
 
     @ManyToMany
     @JoinTable(name="DOMAINE_APPLICATION",
@@ -38,6 +43,49 @@ public class Domaine {
             @JoinColumn(name="domaine_pk", referencedColumnName="pk"),
             inverseJoinColumns=
             @JoinColumn(name="application_pk", referencedColumnName="pk"))
-    @CollectionType(type = "org.esupportail.catappsrvs.model.util.hibernate.ImList")
-    List<Application> applications;
+    final List<Application> applications;
+
+    private Domaine() { // for hibernate
+        code = null;
+        libelle = null;
+        parent = null;
+        sousDomaines = null;
+        applications = null;
+    }
+
+    private Domaine(Code code,
+                    Libelle libelle,
+                    Domaine parent,
+                    List<Domaine> sousDomaines,
+                    List<Application> applications) {
+        this.code = code;
+        this.libelle = libelle;
+        this.parent = parent;
+        this.sousDomaines = sousDomaines;
+        this.applications = applications;
+    }
+
+    public static Domaine domaine(Code code,
+                                  Libelle libelle,
+                                  Domaine parent,
+                                  List<Domaine> sousDomaines,
+                                  List<Application> applications) {
+        return new Domaine(code, libelle, parent, sousDomaines, applications);
+    }
+
+    public Domaine withLibelle(final Libelle libelle) {
+        return domaine(code, libelle, parent, sousDomaines, applications);
+    }
+
+    public Domaine withParent(final Domaine parent) {
+        return domaine(code, libelle, parent, sousDomaines, applications);
+    }
+
+    public Domaine withSousDomaines(final List<Domaine> sousDomaines) {
+        return domaine(code, libelle, parent, sousDomaines, applications);
+    }
+
+    public Domaine withApplications(final List<Application> applications) {
+        return domaine(code, libelle, parent, sousDomaines, applications);
+    }
 }

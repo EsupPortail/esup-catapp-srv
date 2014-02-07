@@ -110,7 +110,6 @@ public class DaoConf {
         }
     }
 
-
     @Profile({"JDBC", "!JNDI"})
     @Configuration
     static class JdbcDataSourceConfig {
