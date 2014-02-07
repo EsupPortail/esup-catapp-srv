@@ -84,6 +84,9 @@ public class DaoConf {
         props.put("hibernate.format_sql", formatSql);
         props.put("hibernate.use_sql_comments", useSqlComments);
         props.put("hibernate.temp.use_jdbc_metadata_defaults", false);
+
+        props.put("hibernate.hbm2ddl.auto", "create-drop");
+
         return props;
     }
 

@@ -1,33 +1,36 @@
 package org.esupportail.catappsrvs.model;
 
 import lombok.Value;
-import lombok.experimental.NonFinal;
+import org.esupportail.catappsrvs.model.util.hibernate.ImList;
+import org.hibernate.annotations.CollectionType;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
-import java.util.Collection;
+import java.util.List;
+
+import static org.esupportail.catappsrvs.model.CommonTypes.Code;
+import static org.esupportail.catappsrvs.model.CommonTypes.Libelle;
 
 @Value(staticConstructor = "domaine")
-@Entity
-@Audited
+@Entity //@Audited
 public class Domaine {
     @Id
-	@GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy= GenerationType.AUTO)
 	Long pk;
 
     @NaturalId
-    @Column(nullable = false)
-    String code;
+    @Embedded @Column(nullable = false)
+    Code code;
 
-    @Column
-    String libelle;
+    @Embedded @Column
+    Libelle libelle;
 
     @ManyToOne
     Domaine parent;
 
     @OneToMany(mappedBy = "parent")
-    Collection<Domaine> sousDomaines;
+    List<Domaine> sousDomaines;
 
     @ManyToMany
     @JoinTable(name="DOMAINE_APPLICATION",
@@ -35,5 +38,6 @@ public class Domaine {
             @JoinColumn(name="domaine_pk", referencedColumnName="pk"),
             inverseJoinColumns=
             @JoinColumn(name="application_pk", referencedColumnName="pk"))
-    Collection<Application> applications;
+    @CollectionType(type = "org.esupportail.catappsrvs.model.util.hibernate.ImList")
+    List<Application> applications;
 }
