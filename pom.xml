@@ -83,6 +83,22 @@
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>9.1.1.v20140108</version>
             </plugin>
+            <plugin>
+                <groupId>com.mysema.maven</groupId>
+                 <artifactId>maven-apt-plugin</artifactId>
+                 <version>1.0.4</version>
+                 <executions>
+                     <execution>
+                         <goals>
+                             <goal>process</goal>
+                         </goals>
+                         <configuration>
+                             <outputDirectory>${project.build.directory}/generated-sources/java</outputDirectory>
+                             <processor>com.mysema.query.apt.jpa.JPAAnnotationProcessor</processor>
+                         </configuration>
+                     </execution>
+                 </executions>
+             </plugin>
         </plugins>
     </build>
     <dependencyManagement>

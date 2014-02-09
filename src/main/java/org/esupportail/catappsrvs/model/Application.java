@@ -1,50 +1,59 @@
 package org.esupportail.catappsrvs.model;
 
+import fj.data.List;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.Wither;
+import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 import java.net.URL;
-import java.util.List;
+import java.util.ArrayList;
 
+import static fj.data.List.iterableList;
 import static org.esupportail.catappsrvs.model.CommonTypes.*;
 
-@EqualsAndHashCode(of = "code", doNotUseGetters = true)
+@EqualsAndHashCode(of = {"code", "version"}, doNotUseGetters = true)
 @ToString @Getter @Accessors(fluent = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Entity @Audited
-public final class Application {
-    @Id
+@Entity @Immutable
+public final class Application implements Versionned<Application> {
+    @Getter(AccessLevel.NONE)
+    @Id @Column(name = "pk", nullable = false)
     @GeneratedValue(strategy= GenerationType.AUTO)
-    Long pk;
+    Long $pk;
 
-    @NaturalId
+    @NaturalId @Embedded @Wither
+    @Column(nullable = false)
+    final Versionned.Version version;
+
+    @NaturalId @Wither
     @Embedded @Column(nullable = false)
     final Code code;
 
-    @Embedded @Column
+    @Embedded @Column @Wither
     final Titre titre;
 
-    @Embedded @Column
+    @Embedded @Column @Wither
     final Libelle libelle;
 
-    @Embedded @Column
+    @Embedded @Column @Wither
     final Description description;
 
-    @Column
+    @Column @Wither
     final URL url;
 
+    @Getter(AccessLevel.NONE)
     @ManyToMany(mappedBy = "applications")
-    final List<Domaine> domaines;
+    final java.util.List<Domaine> domaines;
 
     private Application() { // for hibernate
-        pk = null;
+        version = null;
         code = null;
         titre = null;
         libelle = null;
@@ -53,12 +62,14 @@ public final class Application {
         domaines  = null;
     }
 
-    private Application(Code code,
+    private Application(Versionned.Version version,
+                        Code code,
                         Titre titre,
                         Libelle libelle,
                         Description description,
                         URL url,
-                        List<Domaine> domaines) {
+                        java.util.List<Domaine> domaines) {
+        this.version = version;
         this.code = code;
         this.titre = titre;
         this.libelle = libelle;
@@ -67,36 +78,22 @@ public final class Application {
         this.domaines = domaines;
     }
 
-    public static Application application(Code code,
+    public static Application application(Versionned.Version version,
+                                          Code code,
                                           Titre titre,
                                           Libelle libelle,
                                           Description description,
                                           URL url,
                                           List<Domaine> domaines) {
-        return new Application(code, titre, libelle, description, url, domaines);
+        return new Application(version, code, titre, libelle, description, url,
+                new ArrayList<>(domaines.toCollection()));
     }
 
     public Application withDomaines(final List<Domaine> domaines) {
-        return application(code, titre, libelle, description, url, domaines);
+        return application(version, code, titre, libelle, description, url, domaines);
     }
 
-    public Application withUrl(final URL url) {
-        return application(code, titre, libelle, description, url, domaines);
-    }
+    public Long pk() { return $pk; }
 
-    public Application withDescription(final Description description) {
-        return application(code, titre, libelle, description, url, domaines);
-    }
-
-    public Application withLibelle(final Libelle libelle) {
-        return application(code, titre, libelle, description, url, domaines);
-    }
-
-    public Application withTitre(final Titre titre) {
-        return application(code, titre, libelle, description, url, domaines);
-    }
-
-    public Application withCode(final Code code) {
-        return application(code, titre, libelle, description, url, domaines);
-    }
+    public List<Domaine> domaines() { return iterableList(domaines); }
 }

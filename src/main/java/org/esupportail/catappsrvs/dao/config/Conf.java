@@ -24,7 +24,7 @@ import java.util.Properties;
 
 @Configuration
 @EnableTransactionManagement
-public class DaoConf {
+class Conf {
 
     private final String[] ENTITIES_PACKAGES = new String[] { "org.esupportail.catappsrvs.model" };
 

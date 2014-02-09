@@ -1,41 +1,47 @@
 package org.esupportail.catappsrvs.model;
 
+import fj.data.List;
+import fj.data.Option;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.ToString;
-import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.Wither;
+import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
-import java.util.List;
+import java.util.ArrayList;
 
+import static fj.data.List.iterableList;
+import static fj.data.Option.fromNull;
 import static org.esupportail.catappsrvs.model.CommonTypes.Code;
 import static org.esupportail.catappsrvs.model.CommonTypes.Libelle;
 
-@EqualsAndHashCode(of = "code", doNotUseGetters = true)
-@ToString @Getter @Accessors(fluent = true)
-@FieldDefaults(level = AccessLevel.PRIVATE)
-@Entity @Audited
-public final class Domaine {
-    @Id
+@EqualsAndHashCode(of = {"code", "version"}, doNotUseGetters = true)
+@ToString @FieldDefaults(level = AccessLevel.PRIVATE)
+@Entity @Immutable
+public final class Domaine implements Versionned<Domaine> {
+    @Id @Column(name = "pk", nullable = false)
     @GeneratedValue(strategy= GenerationType.AUTO)
-	Long pk;
+	Long $pk;
 
-    @NaturalId
+    @NaturalId @Embedded @Wither
+    @Column(nullable = false)
+    final Version version;
+
+    @NaturalId @Wither
     @Embedded @Column(nullable = false)
     final Code code;
 
-    @Embedded @Column
+    @Embedded @Column @Wither
     final Libelle libelle;
 
     @ManyToOne
     final Domaine parent;
 
     @OneToMany(mappedBy = "parent")
-    final List<Domaine> sousDomaines;
+    final java.util.List<Domaine> sousDomaines;
 
     @ManyToMany
     @JoinTable(name="DOMAINE_APPLICATION",
@@ -43,9 +49,10 @@ public final class Domaine {
             @JoinColumn(name="domaine_pk", referencedColumnName="pk"),
             inverseJoinColumns=
             @JoinColumn(name="application_pk", referencedColumnName="pk"))
-    final List<Application> applications;
+    final java.util.List<Application> applications;
 
     private Domaine() { // for hibernate
+        version = null;
         code = null;
         libelle = null;
         parent = null;
@@ -53,11 +60,13 @@ public final class Domaine {
         applications = null;
     }
 
-    private Domaine(Code code,
+    private Domaine(Version version,
+                    Code code,
                     Libelle libelle,
                     Domaine parent,
-                    List<Domaine> sousDomaines,
-                    List<Application> applications) {
+                    java.util.List<Domaine> sousDomaines,
+                    java.util.List<Application> applications) {
+        this.version = version;
         this.code = code;
         this.libelle = libelle;
         this.parent = parent;
@@ -65,27 +74,40 @@ public final class Domaine {
         this.applications = applications;
     }
 
-    public static Domaine domaine(Code code,
+    public static Domaine domaine(Version version,
+                                  Code code,
                                   Libelle libelle,
-                                  Domaine parent,
+                                  Option<Domaine> parent,
                                   List<Domaine> sousDomaines,
                                   List<Application> applications) {
-        return new Domaine(code, libelle, parent, sousDomaines, applications);
+        return new Domaine(version, code, libelle, parent.toNull(),
+                new ArrayList<>(sousDomaines.toCollection()),
+                new ArrayList<>(applications.toCollection()));
     }
 
-    public Domaine withLibelle(final Libelle libelle) {
-        return domaine(code, libelle, parent, sousDomaines, applications);
-    }
-
-    public Domaine withParent(final Domaine parent) {
-        return domaine(code, libelle, parent, sousDomaines, applications);
+    public Domaine withParent(final Option<Domaine> parent) {
+        return new Domaine(version, code, libelle, parent.toNull(), sousDomaines, applications);
     }
 
     public Domaine withSousDomaines(final List<Domaine> sousDomaines) {
-        return domaine(code, libelle, parent, sousDomaines, applications);
+        return new Domaine(version, code, libelle, parent, new ArrayList<>(sousDomaines.toCollection()), applications);
     }
 
     public Domaine withApplications(final List<Application> applications) {
-        return domaine(code, libelle, parent, sousDomaines, applications);
+        return new Domaine(version, code, libelle, parent, sousDomaines, new ArrayList<>(applications.toCollection()));
     }
+
+    public Long pk() { return $pk; }
+
+    public Version version() { return version; }
+
+    public Code code() { return code; }
+
+    public Libelle libelle() { return libelle; }
+
+    public Option<Domaine> parent() { return fromNull(parent); }
+
+    public List<Domaine> sousDomaines() { return iterableList(sousDomaines); }
+
+    public List<Application> applications() { return iterableList(applications); }
 }

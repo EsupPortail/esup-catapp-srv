@@ -1,6 +1,6 @@
 package org.esupportail.catappsrvs.web.config;
 
-import org.esupportail.catappsrvs.dao.config.DaoConf;
+import org.esupportail.catappsrvs.dao.config.Conf;
 import org.esupportail.catappsrvs.web.DomaineResource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Import;
 import static org.esupportail.catappsrvs.web.DomaineResource.DomainResource;
 
 @Configuration
-@Import(DaoConf.class)
+@Import(Conf.class)
 public class AppConf {
 
     @Bean
