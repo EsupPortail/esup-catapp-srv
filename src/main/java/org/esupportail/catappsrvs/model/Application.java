@@ -17,12 +17,15 @@ import java.util.ArrayList;
 
 import static fj.data.List.iterableList;
 import static org.esupportail.catappsrvs.model.CommonTypes.*;
+import static org.esupportail.catappsrvs.model.Versionned.Version;
 
 @EqualsAndHashCode(of = {"code", "version"}, doNotUseGetters = true)
 @ToString @Getter @Accessors(fluent = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity @Immutable
 public final class Application implements Versionned<Application> {
+    public static enum Accessibility { Accessible, Unaccessible }
+
     @Getter(AccessLevel.NONE)
     @Id @Column(name = "pk", nullable = false)
     @GeneratedValue(strategy= GenerationType.AUTO)
@@ -30,23 +33,29 @@ public final class Application implements Versionned<Application> {
 
     @NaturalId @Embedded @Wither
     @Column(nullable = false)
-    final Versionned.Version version;
+    final Version version;
 
     @NaturalId @Wither
-    @Embedded @Column(nullable = false)
+    @Embedded @Column(nullable = false, length = 10)
     final Code code;
 
-    @Embedded @Column @Wither
+    @Embedded @Column(length = 200) @Wither
     final Titre titre;
 
-    @Embedded @Column @Wither
+    @Embedded @Column(length = 200) @Wither
     final Libelle libelle;
 
-    @Embedded @Column @Wither
+    @Embedded @Column(length = 3000) @Wither
     final Description description;
 
-    @Column @Wither
+    @Column(length = 1000) @Wither
     final URL url;
+
+    @Column @Enumerated @Wither
+    final Accessibility accessibility;
+
+    @Embedded @Column(length = 200) @Wither
+    final LdapGroup groupe;
 
     @Getter(AccessLevel.NONE)
     @ManyToMany(mappedBy = "applications")
@@ -59,15 +68,19 @@ public final class Application implements Versionned<Application> {
         libelle = null;
         description = null;
         url = null;
+        accessibility = null;
+        groupe = null;
         domaines  = null;
     }
 
-    private Application(Versionned.Version version,
+    private Application(Version version,
                         Code code,
                         Titre titre,
                         Libelle libelle,
                         Description description,
                         URL url,
+                        Accessibility accessibility,
+                        LdapGroup groupe,
                         java.util.List<Domaine> domaines) {
         this.version = version;
         this.code = code;
@@ -75,22 +88,27 @@ public final class Application implements Versionned<Application> {
         this.libelle = libelle;
         this.description = description;
         this.url = url;
+        this.accessibility = accessibility;
+        this.groupe = groupe;
         this.domaines = domaines;
     }
 
-    public static Application application(Versionned.Version version,
+    public static Application application(Version version,
                                           Code code,
                                           Titre titre,
                                           Libelle libelle,
                                           Description description,
                                           URL url,
+                                          Accessibility accessibility,
+                                          LdapGroup groupe,
                                           List<Domaine> domaines) {
-        return new Application(version, code, titre, libelle, description, url,
+        return new Application(version, code, titre, libelle, description, url, accessibility, groupe,
                 new ArrayList<>(domaines.toCollection()));
     }
 
     public Application withDomaines(final List<Domaine> domaines) {
-        return application(version, code, titre, libelle, description, url, domaines);
+        return new Application(version, code, titre, libelle, description, url, accessibility, groupe,
+                new ArrayList<>(domaines.toCollection()));
     }
 
     public Long pk() { return $pk; }

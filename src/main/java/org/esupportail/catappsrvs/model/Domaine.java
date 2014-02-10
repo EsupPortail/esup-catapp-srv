@@ -31,10 +31,10 @@ public final class Domaine implements Versionned<Domaine> {
     final Version version;
 
     @NaturalId @Wither
-    @Embedded @Column(nullable = false)
+    @Embedded @Column(nullable = false, length = 10)
     final Code code;
 
-    @Embedded @Column @Wither
+    @Embedded @Column(length = 200) @Wither
     final Libelle libelle;
 
     @ManyToOne
