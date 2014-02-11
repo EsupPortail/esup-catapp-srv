@@ -37,7 +37,7 @@ public final class Domaine implements Versionned<Domaine> {
     @Embedded @Column(length = 200) @Wither
     final Libelle libelle;
 
-    @ManyToOne
+    @ManyToOne(optional = true)
     final Domaine parent;
 
     @OneToMany(mappedBy = "parent")

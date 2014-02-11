@@ -7,7 +7,7 @@ import lombok.ToString;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
-public interface Versionned<T extends Versionned> {
+public interface Versionned<T extends Versionned<T>> {
 
     Version version();
 
@@ -22,6 +22,7 @@ public interface Versionned<T extends Versionned> {
         private Version() { value = null; } // for hibernate
         public Integer value() { return value; }
 
+        public Version plus(Integer i) { return version(value + i); }
         @Override
         public int compareTo(Version version) {
             return value.compareTo(version.value);
