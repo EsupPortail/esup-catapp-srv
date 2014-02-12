@@ -1,0 +1,60 @@
+[
+  {
+    "pk" : 1,
+    "code" : "SIFAC-P04",
+    "titre" : "Clients légers - Sifac production",
+    "libelle" : "mandant 500",
+    "description" : "",
+    "url" : "",
+    "groupe" : "",
+    "domaines" : ["GFC"],
+    "creation" : "2014-01-01T00:00:00Z",
+    "maj" : "2014-01-01T00:00:00Z",
+    "visible" : true,
+    "links" : [
+      {
+        "rel" : "DOM:GFC",
+        "link" : "http://localhost:8081/domains/gfc"
+      }
+    ]
+  },
+  {
+    "pk" : 2,
+    "code" : "SIFAC-T04",
+    "titre" : "Clients légers - Sifac test",
+    "libelle" : "mandant 310",
+    "description" : "",
+    "url" : "",
+    "groupe" : "",
+    "domaines" : ["GFC"],
+    "creation" : "2014-01-01T00:00:00Z",
+    "maj" : "2014-01-01T00:00:00Z",
+    "visible" : true,
+    "links" : [
+      {
+        "rel" : "DOM:GFC",
+        "link" : "http://localhost:8081/domains/gfc"
+      }
+    ]
+  },
+  {
+    "pk" : 3,
+    "code" : "SIFAC-DOC",
+    "titre" : "Documentations et procédures Sifac",
+    "libelle" : "",
+    "description" : "",
+    "url" : "",
+    "groupe" : "",
+    "domaines" : ["GFC"],
+    "creation" : "2014-01-01T00:00:00Z",
+    "maj" : "2014-01-01T00:00:00Z",
+    "visible" : true,
+    "links" : [
+      {
+        "rel" : "DOM:GFC",
+        "link" : "http://localhost:8081/domains/gfc"
+      }
+    ]
+  }
+
+]

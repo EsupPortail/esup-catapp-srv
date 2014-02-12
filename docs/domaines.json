@@ -1,0 +1,139 @@
+[
+    {
+        "code" : "ROOT",
+        "libelle" : "Domaine racine",
+        "parent" : null,
+        "domaines" : ["ENV-TRAVAIL", "OUTILS-COM", "APPS-METIER"],
+        "applications" : [],
+        "creation" : "2014-01-01T00:00:00Z",
+        "maj" : "2014-01-01T00:00:00Z",
+        "links" : [
+            {
+                "rel" : "DOM:ENV-TRAVAIL",
+                "link" : "http://localhost:8081/domains/env-travail"
+            },
+            {
+                "rel" : "DOM:OUTILS-COM",
+                "link" : "http://localhost:8081/domains/outils-com"
+            },
+            {
+                "rel" : "DOM:APPS-METIER",
+                "link" : "http://localhost:8081/domains/apps-metier"
+            }
+        ]
+    },
+    {
+        "code" : "ENV-TRAVAIL",
+        "libelle" : "Environnement de travail",
+        "parent" : "ROOT",
+        "domaines" : [],
+        "applications" : [],
+        "creation" : "2014-01-01T00:00:00Z",
+        "maj" : "2014-01-01T00:00:00Z",
+        "links" : []
+    },
+    {
+        "code" : "OUTILS-COM",
+        "libelle" : "Outils de communication",
+        "parent" : "ROOT",
+        "domaines" : [],
+        "applications" : [],
+        "creation" : "2014-01-01T00:00:00Z",
+        "maj" : "2014-01-01T00:00:00Z",
+        "links" : []
+    },
+    {
+        "code" : "APPS-METIER",
+        "libelle" : "Applications métier",
+        "parent" : "ROOT",
+        "domaines" : ["PILOTAGE", "GRH", "GEE", "GFC", "GP"],
+        "applications" : [],
+        "creation" : "2014-01-01T00:00:00Z",
+        "maj" : "2014-01-01T00:00:00Z",
+        "links" : [
+            {
+                "rel" : "DOM:PILOTAGE",
+                "link" : "http://localhost:8081/domains/pilotage"
+            },
+            {
+                "rel" : "DOM:GRH",
+                "link" : "http://localhost:8081/domains/grh"
+            },
+            {
+                "rel" : "DOM:GEE",
+                "link" : "http://localhost:8081/domains/gee"
+            },
+            {
+                "rel" : "DOM:GFC",
+                "link" : "http://localhost:8081/domains/gfc"
+            },
+            {
+                "rel" : "DOM:GP",
+                "link" : "http://localhost:8081/domains/gp"
+            }
+        ]
+    },
+    {
+        "code" : "PILOTAGE",
+        "libelle" : "Pilotage",
+        "parent" : "APPS-METIER",
+        "domaines" : [],
+        "applications" : [],
+        "creation" : "2014-01-01T00:00:00Z",
+        "maj" : "2014-01-01T00:00:00Z",
+        "links" : []
+    },
+    {
+        "code" : "GRH",
+        "libelle" : "Gestion Ressources Humaines",
+        "parent" : "APPS-METIER",
+        "domaines" : [],
+        "applications" : [],
+        "creation" : "2014-01-01T00:00:00Z",
+        "maj" : "2014-01-01T00:00:00Z",
+        "links" : []
+    },
+    {
+        "code" : "GEE",
+        "libelle" : "Gestion des enseignements et étudiants",
+        "parent" : "APPS-METIER",
+        "domaines" : [],
+        "applications" : [],
+        "creation" : "2014-01-01T00:00:00Z",
+        "maj" : "2014-01-01T00:00:00Z",
+        "links" : []
+    },
+    {
+        "code" : "GFC",
+        "libelle" : "Gestion financière et comptable",
+        "parent" : "APPS-METIER",
+        "domaines" : [],
+        "applications" : ["SIFAC-P04", "SIFAC-T04", "SIFAC-DOC"],
+        "creation" : "2014-01-01T00:00:00Z",
+        "maj" : "2014-01-01T00:00:00Z",
+        "links" : [
+            {
+                "rel" : "APP:SIFAC-P04",
+                "link" : "http://localhost:8081/domains/sifac-p04"
+            },
+            {
+                "rel" : "APP:SIFAC-T04",
+                "link" : "http://localhost:8081/domains/sifac-t04"
+            },
+            {
+                "rel" : "APP:SIFAC-DOC",
+                "link" : "http://localhost:8081/domains/sifac-doc"
+            }
+        ]
+    },
+    {
+        "code" : "GP",
+        "libelle" : "Gestion patrimoine",
+        "parent" : "APPS-METIER",
+        "domaines" : [],
+        "applications" : [],
+        "creation" : "2014-01-01T00:00:00Z",
+        "maj" : "2014-01-01T00:00:00Z",
+        "links" : []
+    }
+]

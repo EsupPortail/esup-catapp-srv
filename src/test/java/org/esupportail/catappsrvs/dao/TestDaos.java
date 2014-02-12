@@ -50,6 +50,7 @@ import static org.esupportail.catappsrvs.model.CommonTypes.Libelle.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Titre.*;
 import static org.esupportail.catappsrvs.model.Domaine.*;
 import static org.esupportail.catappsrvs.model.Versionned.Version.*;
+import static org.esupportail.catappsrvs.model.utils.Equals.domaineCompleteEq;
 import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
@@ -167,7 +168,7 @@ public class TestDaos {
         }
 
         for (Domaine domaine : result.right())
-            assertTrue("read doit retourner la bonne entité", Equals.domaineCompleteEq.eq(firstDom, domaine));
+            assertTrue("read doit retourner la bonne entité", domaineCompleteEq.eq(firstDom, domaine));
     }
 
     @Test @Transactional
@@ -178,21 +179,27 @@ public class TestDaos {
                 Option.<Domaine>none(),
                 List.<Domaine>nil(),
                 list(firstApp));
+        domaineDao.create(domToCreate);
 
-        final Either<Exception, Domaine> createdDom = domaineDao.create(domToCreate);
+        final Domaine domToUpdate = firstDom
+                .withLibelle(libelle("UPDATED Domaine 1"))
+                .withSousDomaines(single(domToCreate));
 
-        final Either<Exception, Domaine> dom =
-                domaineDao.update(firstDom
-                        .withLibelle(libelle("UPDATED Domaine 1"))
-                        .withSousDomaines(single(domToCreate)));
+        final Either<Exception, Domaine> dom = domaineDao.update(domToUpdate);
 
-        final Either<Exception, Domaine> updatedDom = domaineDao.read(firstDom.code(), Option.<Version>none());
+        final Either<Exception, Domaine> readDom = domaineDao.read(firstDom.code(), Option.<Version>none());
 
-        for (Exception e : dom.left().toList().append(updatedDom.left().toList()))
+        for (Exception e : dom.left().toList().append(readDom.left().toList()))
             throw new AssertionError(e);
 
-        for (P2<Domaine, Domaine> pair : dom.right().toList().zip(updatedDom.right().toList())) {
-            assertTrue("update doit mettre à jour les données", Equals.domaineCompleteEq.eq(pair._1(), pair._2()));
+        for (P2<Domaine, Domaine> pair : dom.right().toList().zip(readDom.right().toList())) {
+            assertTrue("update doit mettre à jour les données",
+                    domaineCompleteEq.eq(
+                            domToUpdate
+                                    .withSousDomaines(single(domToCreate.withVersion(version(1))))
+                                    .withVersion(domToUpdate.version().plus(1)),
+                            pair._2())
+                    && domaineCompleteEq.eq(pair._1(), pair._2()));
             assertTrue("update doit se traduire par une incrémentation de la version",
                     pair._1().version().equals(version(2)) && pair._2().version().equals(version(2)));
         }

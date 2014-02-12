@@ -19,8 +19,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 import java.util.Properties;
+
+import static fj.Bottom.error;
 
 @Configuration
 @EnableTransactionManagement

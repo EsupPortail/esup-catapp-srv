@@ -13,8 +13,6 @@ import org.esupportail.catappsrvs.model.QDomaine;
 import javax.persistence.EntityManager;
 
 import static fj.Function.curry;
-
-import static fj.data.Option.some;
 import static org.esupportail.catappsrvs.model.Versionned.Version;
 
 public final class DomaineDao extends CrudDao<Domaine> implements IDomaineDao {

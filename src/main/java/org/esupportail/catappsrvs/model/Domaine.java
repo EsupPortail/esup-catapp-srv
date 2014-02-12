@@ -1,5 +1,7 @@
 package org.esupportail.catappsrvs.model;
 
+import fj.F;
+import fj.F6;
 import fj.data.List;
 import fj.data.Option;
 import lombok.AccessLevel;
@@ -84,6 +86,18 @@ public final class Domaine implements Versionned<Domaine> {
                 new ArrayList<>(sousDomaines.toCollection()),
                 new ArrayList<>(applications.toCollection()));
     }
+
+    public static final F6<Version, Code, Libelle, Option<Domaine>, List<Domaine>, List<Application>, Domaine> domaine =
+            new F6<Version, Code, Libelle, Option<Domaine>, List<Domaine>, List<Application>, Domaine>() {
+                public Domaine f(Version version,
+                                 Code code,
+                                 Libelle libelle,
+                                 Option<Domaine> parent,
+                                 List<Domaine> sousDomaines,
+                                 List<Application> applications) {
+                    return domaine(version, code, libelle, parent, sousDomaines, applications);
+                }
+            };
 
     public Domaine withParent(final Option<Domaine> parent) {
         return new Domaine(version, code, libelle, parent.toNull(), sousDomaines, applications);

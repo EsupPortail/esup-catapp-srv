@@ -1,5 +1,8 @@
 package org.esupportail.catappsrvs.model;
 
+import fj.F2;
+import fj.P4;
+import fj.P5;
 import fj.data.List;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
@@ -92,6 +95,9 @@ public final class Application implements Versionned<Application> {
         this.domaines = domaines;
     }
 
+    /**
+     * TODO : trop d'arguments => refactorer
+     */
     public static Application application(Version version,
                                           Code code,
                                           Titre titre,
@@ -104,6 +110,18 @@ public final class Application implements Versionned<Application> {
         return new Application(version, code, titre, libelle, description, url, accessibility, groupe,
                 new ArrayList<>(domaines.toCollection()));
     }
+
+    public static final F2<
+            P4<Version, Code, Titre, Libelle>,
+            P5<Description, URL, Accessibilite, LdapGroup, List<Domaine>>,
+            Application> application =
+            new F2<P4<Version, Code, Titre, Libelle>, P5<Description, URL, Accessibilite, LdapGroup, List<Domaine>>, Application>() {
+                public Application f(P4<Version, Code, Titre, Libelle> p4, P5<Description, URL, Accessibilite, LdapGroup, List<Domaine>> p5) {
+                    return application(
+                            p4._1(), p4._2(), p4._3(), p4._4(),
+                            p5._1(), p5._2(), p5._3(), p5._4(), p5._5());
+                }
+            };
 
     public Application withDomaines(final List<Domaine> domaines) {
         return new Application(version, code, titre, libelle, description, url, accessibilite, groupe,
