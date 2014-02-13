@@ -7,9 +7,6 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 
-import javax.ws.rs.core.Application;
-import java.util.*;
-
 public final class RestService extends ResourceConfig {
     public RestService() {
         register(SpringComponentProvider.class);

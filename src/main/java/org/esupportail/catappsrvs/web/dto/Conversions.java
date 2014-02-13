@@ -41,6 +41,12 @@ public final class Conversions {
         }
     };
 
+    public static final F<Application, String> appCode = new F<Application, String>() {
+        public String f(Application application) {
+            return application.code().value();
+        }
+    };
+
     public static final Domaine emptyDom =
             domaine(version(-1),
                     code(""),
@@ -55,8 +61,19 @@ public final class Conversions {
                         }
                     };
 
-    public static Either<Exception, DomaineDTO> domaineToDTO(Domaine domaine) {
-        return null;
+    public static final F<Domaine,String> domCode = new F<Domaine, String>() {
+        public String f(Domaine domaine) {
+            return domaine.code().value();
+        }
+    };
+
+    public static DomaineDTO domaineToDTO(Domaine domaine) {
+        return DomaineDTO.domaineDTO(
+                domaine.code().value(),
+                domaine.libelle().value(),
+                domaine.parent().option("", domCode),
+                domaine.sousDomaines().map(domCode).array(String[].class),
+                domaine.applications().map(appCode).array(String[].class));
     }
 
     public static Either<Exception, ApplicationDTO> applicationToDTO(Application application) {

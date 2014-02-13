@@ -1,6 +1,7 @@
 package org.esupportail.catappsrvs.web;
 
 import fj.F;
+import fj.F2;
 import fj.F6;
 import fj.Function;
 import fj.data.List;
@@ -17,20 +18,19 @@ import org.esupportail.catappsrvs.web.dto.DomaineDTO;
 import org.esupportail.catappsrvs.web.utils.Functions;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.ext.ExceptionMapper;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import static fj.Function.curry;
 import static fj.data.Option.fromNull;
-import static fj.data.Validation.fail;
-import static fj.data.Validation.success;
-import static fj.data.Validation.validation;
+import static fj.data.Validation.*;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.Response.ResponseBuilder;
 import static org.esupportail.catappsrvs.model.CommonTypes.Code.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Libelle.*;
 import static org.esupportail.catappsrvs.model.Domaine.*;
@@ -40,23 +40,23 @@ import static org.esupportail.catappsrvs.web.dto.Validations.*;
 import static org.esupportail.catappsrvs.web.utils.Functions.*;
 
 @Slf4j @Value(staticConstructor = "domaineResource") @Getter(AccessLevel.NONE) // lombok
-@Path("/domaine") // jaxrs
+@Path("domaine") // jaxrs
 @Component // spring
 @SuppressWarnings("SpringJavaAutowiringInspection") // intellij
 public class DomaineResource {
     IDomaine domaineSrv;
 
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response create(DomaineDTO domaine) {
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public Response create(DomaineDTO domaine, @Context final UriInfo uriInfo) {
         return validAndBuild(domaine).nel()
                 .bind(new F<Domaine, Validation<NonEmptyList<Exception>, Response>>() {
                     public Validation<NonEmptyList<Exception>, Response> f(Domaine validDom) {
                         return validation(domaineSrv.create(validDom)).nel()
                                 .bind(new F<Domaine, Validation<NonEmptyList<Exception>, Response>>() {
                                     public Validation<NonEmptyList<Exception>, Response> f(Domaine createdDom) {
-                                        return buildResponse(createdDom).nel();
+                                        return createResp(createdDom, uriInfo).nel();
                                     }
                                 });
                     }
@@ -67,11 +67,55 @@ public class DomaineResource {
 
     }
 
-    private Validation<Exception, Response> buildResponse(Domaine domaine) {
+    @GET @Path("{code}")
+    @Produces(APPLICATION_JSON)
+    public Response read(@PathParam("code") String code, @Context final UriInfo uriInfo) {
+        return validCode(code).nel()
+                .f().map(Functions.fieldsException).nel()
+                .bind(new F<String, Validation<NonEmptyList<Exception>, Response>>() {
+                    public Validation<NonEmptyList<Exception>, Response> f(String validCode) {
+                        return validation(domaineSrv.read(code(validCode), Option.<Version>none())).nel()
+                                .bind(new F<Domaine, Validation<NonEmptyList<Exception>, Response>>() {
+                                    public Validation<NonEmptyList<Exception>, Response> f(Domaine domaine) {
+                                        return readResp(domaine, uriInfo).nel();
+                                    }
+                                });
+                    }
+                })
+                .validation(
+                        treatErrors("Erreur lors de la lecture d'un domaine"),
+                        Function.<Response>identity());
+    }
+
+    private Validation<Exception, Response> createResp(Domaine domaine, UriInfo uriInfo) {
         try {
-            return success(Response.created(new URI("domaine/" + domaine.code().value())).build());
-        } catch (URISyntaxException e) {
-            return fail((Exception) e);
+            final UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
+            final URI location = uriBuilder.path(domaine.code().value()).build();
+            return success(Response.created(location).build());
+        } catch (Exception e) {
+            return fail(e);
+        }
+    }
+
+    private Validation<Exception, Response> readResp(Domaine domaine, final UriInfo uriInfo) {
+        try {
+            final ResponseBuilder respBuilder =
+                    domaine.sousDomaines().foldLeft(
+                            new F2<ResponseBuilder, Domaine, ResponseBuilder>() {
+                                public ResponseBuilder f(ResponseBuilder rb, Domaine dom) {
+                                    final String code = dom.code().value();
+                                    return rb.link(
+                                            uriInfo.getBaseUriBuilder()
+                                                    .path(DomaineResource.class)
+                                                    .path(code)
+                                                    .build(),
+                                            "dom:" + code);
+                                }
+                            },
+                            Response.ok(domaineToDTO(domaine)));
+            return success(respBuilder.build());
+        } catch (Exception e) {
+            return fail(e);
         }
     }
 

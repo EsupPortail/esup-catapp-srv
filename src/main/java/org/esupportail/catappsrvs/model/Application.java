@@ -31,7 +31,7 @@ public final class Application implements Versionned<Application> {
     @Getter(AccessLevel.NONE)
     @Id @Column(name = "pk", nullable = false)
     @GeneratedValue(strategy= GenerationType.AUTO)
-    Long $pk;
+    final Long pk;
 
     @NaturalId @Embedded @Wither
     @Column(nullable = false)
@@ -64,6 +64,7 @@ public final class Application implements Versionned<Application> {
     final java.util.List<Domaine> domaines;
 
     private Application() { // for hibernate
+        pk = null;
         version = null;
         code = null;
         titre = null;
@@ -75,7 +76,8 @@ public final class Application implements Versionned<Application> {
         domaines  = null;
     }
 
-    private Application(Version version,
+    private Application(Long pk,
+                        Version version,
                         Code code,
                         Titre titre,
                         Libelle libelle,
@@ -84,6 +86,7 @@ public final class Application implements Versionned<Application> {
                         Accessibilite accessibilite,
                         LdapGroup groupe,
                         java.util.List<Domaine> domaines) {
+        this.pk = pk;
         this.version = version;
         this.code = code;
         this.titre = titre;
@@ -107,7 +110,8 @@ public final class Application implements Versionned<Application> {
                                           Accessibilite accessibility,
                                           LdapGroup groupe,
                                           List<Domaine> domaines) {
-        return new Application(version, code, titre, libelle, description, url, accessibility, groupe,
+        return new Application(null, version, code, titre, libelle,
+                description, url, accessibility, groupe,
                 new ArrayList<>(domaines.toCollection()));
     }
 
@@ -124,11 +128,12 @@ public final class Application implements Versionned<Application> {
             };
 
     public Application withDomaines(final List<Domaine> domaines) {
-        return new Application(version, code, titre, libelle, description, url, accessibilite, groupe,
+        return new Application(pk, version, code, titre, libelle,
+                description, url, accessibilite, groupe,
                 new ArrayList<>(domaines.toCollection()));
     }
 
-    public Long pk() { return $pk; }
+    public Long pk() { return pk; }
 
     public List<Domaine> domaines() { return iterableList(domaines); }
 }

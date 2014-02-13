@@ -45,11 +45,12 @@ abstract class CrudDao<T extends Versionned<T>> implements ICrudDao<T> {
         lastVersion = max(tPath.getSet("version", Version.class));
     }
 
-    protected abstract Either<Exception, T> completeEntity(T t);
+    protected abstract Either<Exception, T> prepareEntity(T t);
+    protected abstract Either<Exception, T> refineEntity(T t);
 
     @Override
     public final Either<Exception, T> create(T t) {
-        return completeEntity(t)
+        return prepareEntity(t)
                 .right()
                 .bind(new F<T, Either<Exception, T>>() {
                     public Either<Exception, T> f(T t) {
@@ -70,11 +71,18 @@ abstract class CrudDao<T extends Versionned<T>> implements ICrudDao<T> {
         try {
             final JPAQuery query =
                     from(ent).where(codePath.eq(code).and(versionPath.eq(realVersion)));
-            return fromNull(query.uniqueResult(ent)).toEither(new P1<Exception>() {
-                public Exception _1() {
-                    return new NoSuchElementException("aucune entité trouvée pour la paire clé-version : " + code + "-" + version);
-                }
-            });
+            return fromNull(query.uniqueResult(ent))
+                    .toEither(new P1<Exception>() {
+                        public Exception _1() {
+                            return new NoSuchElementException(
+                                    "aucune entité trouvée pour la paire clé-version : " + code + "-" + version);
+                        }})
+                    .right()
+                    .bind(new F<T, Either<Exception, T>>() {
+                        public Either<Exception, T> f(T t) {
+                            return refineEntity(t);
+                        }
+                    });
         } catch (Exception e) {
             return left(e);
         }
@@ -86,7 +94,7 @@ abstract class CrudDao<T extends Versionned<T>> implements ICrudDao<T> {
                 .right()
                 .bind(new F<Version, Either<Exception, T>>() {
                     public Either<Exception, T> f(final Version version) {
-                        return completeEntity(t)
+                        return prepareEntity(t)
                                 .right()
                                 .bind(new F<T, Either<Exception, T>>() {
                                     public Either<Exception, T> f(T completeT) {

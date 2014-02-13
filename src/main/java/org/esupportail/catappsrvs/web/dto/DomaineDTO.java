@@ -4,9 +4,13 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.experimental.Accessors;
+import org.codehaus.jackson.annotate.JsonAutoDetect;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import static org.codehaus.jackson.annotate.JsonAutoDetect.Visibility.ANY;
+
+@JsonAutoDetect(fieldVisibility = ANY)
 @Value @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Accessors(fluent = true)
 public class DomaineDTO {

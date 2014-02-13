@@ -10,6 +10,7 @@ import org.esupportail.catappsrvs.services.IDomaine;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.inject.Inject;
 
@@ -18,12 +19,12 @@ import javax.inject.Inject;
 public class Services {
 
     @Bean @Inject
-    public IDomaine domaineSrv(IDomaineDao domaineDao) {
-        return DomaineSrv.domaineSrv(domaineDao);
+    public IDomaine domaineSrv(IDomaineDao domaineDao, PlatformTransactionManager txManager) {
+        return DomaineSrv.domaineSrv(domaineDao, txManager);
     }
 
     @Bean @Inject
-    public IApplication applicationSrv(IApplicationDao applicationDao) {
-        return ApplicationSrv.applicationSrv(applicationDao);
+    public IApplication applicationSrv(IApplicationDao applicationDao, PlatformTransactionManager txManager) {
+        return ApplicationSrv.applicationSrv(applicationDao, txManager);
     }
 }

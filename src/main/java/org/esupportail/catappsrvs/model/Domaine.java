@@ -1,7 +1,5 @@
 package org.esupportail.catappsrvs.model;
 
-import fj.F;
-import fj.F6;
 import fj.data.List;
 import fj.data.Option;
 import lombok.AccessLevel;
@@ -9,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.Wither;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.NaturalId;
 
@@ -26,7 +25,7 @@ import static org.esupportail.catappsrvs.model.CommonTypes.Libelle;
 public final class Domaine implements Versionned<Domaine> {
     @Id @Column(name = "pk", nullable = false)
     @GeneratedValue(strategy= GenerationType.AUTO)
-	Long $pk;
+	final Long pk;
 
     @NaturalId @Embedded @Wither
     @Column(nullable = false)
@@ -45,7 +44,7 @@ public final class Domaine implements Versionned<Domaine> {
     @OneToMany(mappedBy = "parent")
     final java.util.List<Domaine> sousDomaines;
 
-    @ManyToMany
+    @ManyToMany @BatchSize(size = 5)
     @JoinTable(name="DOMAINE_APPLICATION",
             joinColumns=
             @JoinColumn(name="domaine_pk", referencedColumnName="pk"),
@@ -54,6 +53,7 @@ public final class Domaine implements Versionned<Domaine> {
     final java.util.List<Application> applications;
 
     private Domaine() { // for hibernate
+        pk = null;
         version = null;
         code = null;
         libelle = null;
@@ -62,12 +62,14 @@ public final class Domaine implements Versionned<Domaine> {
         applications = null;
     }
 
-    private Domaine(Version version,
+    private Domaine(Long pk,
+                    Version version,
                     Code code,
                     Libelle libelle,
                     Domaine parent,
                     java.util.List<Domaine> sousDomaines,
                     java.util.List<Application> applications) {
+        this.pk = pk;
         this.version = version;
         this.code = code;
         this.libelle = libelle;
@@ -82,36 +84,24 @@ public final class Domaine implements Versionned<Domaine> {
                                   Option<Domaine> parent,
                                   List<Domaine> sousDomaines,
                                   List<Application> applications) {
-        return new Domaine(version, code, libelle, parent.toNull(),
+        return new Domaine(null, version, code, libelle, parent.toNull(),
                 new ArrayList<>(sousDomaines.toCollection()),
                 new ArrayList<>(applications.toCollection()));
     }
 
-    public static final F6<Version, Code, Libelle, Option<Domaine>, List<Domaine>, List<Application>, Domaine> domaine =
-            new F6<Version, Code, Libelle, Option<Domaine>, List<Domaine>, List<Application>, Domaine>() {
-                public Domaine f(Version version,
-                                 Code code,
-                                 Libelle libelle,
-                                 Option<Domaine> parent,
-                                 List<Domaine> sousDomaines,
-                                 List<Application> applications) {
-                    return domaine(version, code, libelle, parent, sousDomaines, applications);
-                }
-            };
-
     public Domaine withParent(final Option<Domaine> parent) {
-        return new Domaine(version, code, libelle, parent.toNull(), sousDomaines, applications);
+        return new Domaine(pk, version, code, libelle, parent.toNull(), sousDomaines, applications);
     }
 
     public Domaine withSousDomaines(final List<Domaine> sousDomaines) {
-        return new Domaine(version, code, libelle, parent, new ArrayList<>(sousDomaines.toCollection()), applications);
+        return new Domaine(pk, version, code, libelle, parent, new ArrayList<>(sousDomaines.toCollection()), applications);
     }
 
     public Domaine withApplications(final List<Application> applications) {
-        return new Domaine(version, code, libelle, parent, sousDomaines, new ArrayList<>(applications.toCollection()));
+        return new Domaine(pk, version, code, libelle, parent, sousDomaines, new ArrayList<>(applications.toCollection()));
     }
 
-    public Long pk() { return $pk; }
+    public Long pk() { return pk; }
 
     public Version version() { return version; }
 

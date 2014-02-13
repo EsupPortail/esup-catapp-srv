@@ -11,6 +11,7 @@ import javax.ws.rs.core.Response;
 
 import static fj.Monoid.stringMonoid;
 import static fj.data.Array.array;
+import static java.lang.String.format;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -33,7 +34,7 @@ public final class Functions {
             public Response f(NonEmptyList<Exception> exceptions) {
                 for (Exception e : exceptions)
                       log.error(msg, e);
-                return Response.serverError().build();
+                return Response.serverError().entity(format("{\"erreur\": \"%s\"}", msg)).build();
             }
         };
     }

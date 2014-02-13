@@ -79,8 +79,8 @@ class Conf {
 
     private Properties jpaProperties() {
         Properties props = new Properties();
-        props.put("hibernate.cache.provider_class",
-                "org.hibernate.cache.NoCacheProvider");
+        props.put("hibernate.batch_fetch_style", "legacy");
+        props.put("hibernate.cache.provider_class", "org.hibernate.cache.NoCacheProvider");
         props.put("hibernate.cache.use_query_cache", false);
         props.put("hibernate.cache.use_second_level_cache", false);
         props.put("hibernate.show_sql", showSql);
@@ -88,7 +88,7 @@ class Conf {
         props.put("hibernate.use_sql_comments", useSqlComments);
         props.put("hibernate.temp.use_jdbc_metadata_defaults", false);
 
-        props.put("hibernate.hbm2ddl.auto", "create-drop");
+        //props.put("hibernate.hbm2ddl.auto", "create-drop");
 
         return props;
     }

@@ -28,7 +28,7 @@ public final class ApplicationDao extends CrudDao<Application> implements IAppli
     }
 
     @Override
-    protected Either<Exception, Application> completeEntity(final Application application) {
+    protected Either<Exception, Application> prepareEntity(final Application application) {
         final List<Either<Exception, Domaine>> domaines =
                 application.domaines().map(new F<Domaine, Either<Exception, Domaine>>() {
                     public Either<Exception, Domaine> f(Domaine domaine) {
@@ -43,5 +43,10 @@ public final class ApplicationDao extends CrudDao<Application> implements IAppli
                         return application.withDomaines(domaines);
                     }
                 });
+    }
+
+    @Override
+    protected Either<Exception, Application> refineEntity(Application application) {
+        return Either.right(application.withDomaines(application.domaines())); // force le chargement (hibernate)
     }
 }

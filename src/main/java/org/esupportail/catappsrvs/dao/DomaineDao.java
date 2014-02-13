@@ -13,6 +13,7 @@ import org.esupportail.catappsrvs.model.QDomaine;
 import javax.persistence.EntityManager;
 
 import static fj.Function.curry;
+import static fj.data.Option.none;
 import static org.esupportail.catappsrvs.model.Versionned.Version;
 
 public final class DomaineDao extends CrudDao<Domaine> implements IDomaineDao {
@@ -30,8 +31,16 @@ public final class DomaineDao extends CrudDao<Domaine> implements IDomaineDao {
     }
 
     @Override
-    protected Either<Exception, Domaine> completeEntity(final Domaine domaine) {
-        final Either<Exception, Option<Domaine>> parent = Either.right(domaine.parent());
+    protected Either<Exception, Domaine> prepareEntity(final Domaine domaine) {
+        final Either<Exception, Option<Domaine>> parent =
+                domaine.parent().map(new F<Domaine, Either<Exception, Option<Domaine>>>() {
+                    public Either<Exception, Option<Domaine>> f(Domaine dom) {
+                        return read(dom.code(), Option.<Version>none())
+                                .right()
+                                .map(Option.<Domaine>some_());
+                    }
+                })
+                .orSome(Either.<Exception, Option<Domaine>>right(Option.<Domaine>none()));
 
         final List<Either<Exception, Domaine>> sousDomaines =
                 domaine.sousDomaines().map(new F<Domaine, Either<Exception, Domaine>>() {
@@ -61,5 +70,12 @@ public final class DomaineDao extends CrudDao<Domaine> implements IDomaineDao {
                                         .withSousDomaines(ssdoms);
                             }
                         }))));
+    }
+
+    @Override
+    protected Either<Exception, Domaine> refineEntity(Domaine domaine) {
+        return Either.right(domaine
+                .withSousDomaines(domaine.sousDomaines())
+                .withApplications(domaine.applications()));
     }
 }
