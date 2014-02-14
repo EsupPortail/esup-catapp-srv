@@ -7,7 +7,7 @@ import lombok.ToString;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
-public interface Versionned<T extends Versionned<T>> {
+public interface Versionned<T> {
 
     Version version();
 
