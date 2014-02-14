@@ -25,7 +25,7 @@ import static org.esupportail.catappsrvs.model.CommonTypes.*;
 @ToString @Getter @Accessors(fluent = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity @Immutable
-public final class Application implements Versionned<Application> {
+public final class Application implements Versionned<Application>, HasCode<Application> {
     public static enum Accessibilite { Accessible, Inaccessible }
 
     @Getter(AccessLevel.NONE)

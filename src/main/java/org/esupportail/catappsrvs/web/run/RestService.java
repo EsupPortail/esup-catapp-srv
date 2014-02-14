@@ -1,5 +1,6 @@
 package org.esupportail.catappsrvs.web.run;
 
+import org.esupportail.catappsrvs.web.ApplicationResource;
 import org.esupportail.catappsrvs.web.DomaineResource;
 import org.esupportail.catappsrvs.web.config.jerseyspring.SpringComponentProvider;
 import org.glassfish.jersey.CommonProperties;
@@ -11,6 +12,7 @@ public final class RestService extends ResourceConfig {
     public RestService() {
         register(SpringComponentProvider.class);
         register(DomaineResource.class);
+        register(ApplicationResource.class);
         register(JacksonFeature.class);
         property(ServerProperties.METAINF_SERVICES_LOOKUP_DISABLE, false);
         property(CommonProperties.FEATURE_AUTO_DISCOVERY_DISABLE, true);

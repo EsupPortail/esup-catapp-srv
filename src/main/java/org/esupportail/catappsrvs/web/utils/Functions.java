@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import static fj.Monoid.stringMonoid;
 import static fj.data.Array.array;
 import static java.lang.String.format;
+import static javax.ws.rs.core.Response.Status;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -25,7 +26,7 @@ public final class Functions {
 
     public static final F<NonEmptyList<String>, Exception> fieldsException = new F<NonEmptyList<String>, Exception>() {
         public Exception f(NonEmptyList<String> errors) {
-            return new Exception("Les champs suivants ont des valeurs incorrectes :\n- " + stringMonoid.join(errors, "\n- "));
+            return new ValidationError("Les champs suivants ont des valeurs incorrectes :\n- " + stringMonoid.join(errors, "\n- "));
         }
     };
 
@@ -34,7 +35,10 @@ public final class Functions {
             public Response f(NonEmptyList<Exception> exceptions) {
                 for (Exception e : exceptions)
                       log.error(msg, e);
-                return Response.serverError().entity(format("{\"erreur\": \"%s\"}", msg)).build();
+                final Status status = exceptions.head instanceof ValidationError
+                        ? Status.BAD_REQUEST
+                        : Status.INTERNAL_SERVER_ERROR;
+                return Response.status(status).entity(format("{\"erreur\": \"%s\"}", msg)).build();
             }
         };
     }

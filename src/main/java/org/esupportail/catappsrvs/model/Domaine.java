@@ -22,7 +22,7 @@ import static org.esupportail.catappsrvs.model.CommonTypes.Libelle;
 @EqualsAndHashCode(of = {"code", "version"}, doNotUseGetters = true)
 @ToString @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity @Immutable
-public final class Domaine implements Versionned<Domaine> {
+public final class Domaine implements Versionned<Domaine>, HasCode<Domaine> {
     @Id @Column(name = "pk", nullable = false)
     @GeneratedValue(strategy= GenerationType.AUTO)
 	final Long pk;

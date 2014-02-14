@@ -12,6 +12,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.esupportail.catappsrvs.model.Application;
 import org.esupportail.catappsrvs.model.Domaine;
 import org.esupportail.catappsrvs.services.IDomaine;
 import org.esupportail.catappsrvs.web.dto.DomaineDTO;
@@ -19,10 +20,7 @@ import org.esupportail.catappsrvs.web.utils.Functions;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
 import javax.ws.rs.ext.ExceptionMapper;
 import java.net.URI;
 
@@ -30,6 +28,7 @@ import static fj.Function.curry;
 import static fj.data.Option.fromNull;
 import static fj.data.Validation.*;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.ResponseBuilder;
 import static org.esupportail.catappsrvs.model.CommonTypes.Code.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Libelle.*;
@@ -83,9 +82,37 @@ public class DomaineResource {
                     }
                 })
                 .validation(
-                        treatErrors("Erreur lors de la lecture d'un domaine"),
+                        treatErrors("Erreur de lecture d'un domaine"),
                         Function.<Response>identity());
     }
+
+    @PUT @Path("{code}")
+    @Consumes(APPLICATION_JSON)
+    @Produces(TEXT_PLAIN)
+    public Response update(@PathParam("code") String code, final DomaineDTO domaine, @Context final UriInfo uriInfo) {
+        return validCode(code).nel()
+                .f().map(Functions.fieldsException).nel()
+                .bind(new F<String, Validation<NonEmptyList<Exception>, Response>>() {
+                    public Validation<NonEmptyList<Exception>, Response> f(String validCode) {
+                        return validAndBuild(domaine.withCode(validCode)).nel()
+                                .bind(new F<Domaine, Validation<NonEmptyList<Exception>, Response>>() {
+                                    public Validation<NonEmptyList<Exception>, Response> f(Domaine validDom) {
+                                        return validation(domaineSrv.update(validDom)).nel()
+                                                .map(new F<Domaine, Response>() {
+                                                    public Response f(Domaine domaine) {
+                                                        return Response.ok().build();
+                                                    }
+                                                });
+                                    }
+                                });
+                    }
+                })
+                .validation(
+                        treatErrors("Erreur de mise à jour d'un Domaine"),
+                        Function.<Response>identity());
+    }
+
+
 
     private Validation<Exception, Response> createResp(Domaine domaine, UriInfo uriInfo) {
         try {
@@ -99,7 +126,7 @@ public class DomaineResource {
 
     private Validation<Exception, Response> readResp(Domaine domaine, final UriInfo uriInfo) {
         try {
-            final ResponseBuilder respBuilder =
+            final ResponseBuilder sousDomsBuilder =
                     domaine.sousDomaines().foldLeft(
                             new F2<ResponseBuilder, Domaine, ResponseBuilder>() {
                                 public ResponseBuilder f(ResponseBuilder rb, Domaine dom) {
@@ -113,7 +140,21 @@ public class DomaineResource {
                                 }
                             },
                             Response.ok(domaineToDTO(domaine)));
-            return success(respBuilder.build());
+            final ResponseBuilder appsBuilder =
+                    domaine.applications().foldLeft(
+                            new F2<ResponseBuilder, Application, ResponseBuilder>() {
+                                public ResponseBuilder f(ResponseBuilder rb, Application app) {
+                                    final String code = app.code().value();
+                                    return rb.link(
+                                            uriInfo.getBaseUriBuilder()
+                                                    .path(ApplicationResource.class)
+                                                    .path(code)
+                                                    .build(),
+                                            "app:" + code);
+                                }
+                            },
+                            sousDomsBuilder);
+            return success(appsBuilder.build());
         } catch (Exception e) {
             return fail(e);
         }
@@ -133,13 +174,14 @@ public class DomaineResource {
     private final F6<Integer,String,String,Option<String>,List<String>,List<String>,Domaine> buildDomain =
             new F6<Integer, String, String, Option<String>, List<String>, List<String>, Domaine>() {
                 public Domaine f(Integer ver, String code, String lib, Option<String> parent, List<String> ssdoms, List<String> apps) {
-                    return domaine(
+                    final Domaine d = domaine(
                             version(ver),
                             code(code),
                             libelle(lib),
                             parent.map(domWithCode),
                             ssdoms.map(domWithCode),
                             apps.map(appWithCode));
+                    return d;
                 }
             };
 

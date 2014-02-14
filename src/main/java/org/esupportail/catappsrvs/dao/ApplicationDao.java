@@ -11,6 +11,7 @@ import org.esupportail.catappsrvs.model.QApplication;
 
 import javax.persistence.EntityManager;
 
+import static fj.data.Either.right;
 import static org.esupportail.catappsrvs.model.Versionned.Version;
 
 public final class ApplicationDao extends CrudDao<Application> implements IApplicationDao {
@@ -28,7 +29,7 @@ public final class ApplicationDao extends CrudDao<Application> implements IAppli
     }
 
     @Override
-    protected Either<Exception, Application> prepareEntity(final Application application) {
+    protected Either<Exception, Application> prePersist(final Application application) {
         final List<Either<Exception, Domaine>> domaines =
                 application.domaines().map(new F<Domaine, Either<Exception, Domaine>>() {
                     public Either<Exception, Domaine> f(Domaine domaine) {
@@ -46,7 +47,12 @@ public final class ApplicationDao extends CrudDao<Application> implements IAppli
     }
 
     @Override
-    protected Either<Exception, Application> refineEntity(Application application) {
-        return Either.right(application.withDomaines(application.domaines())); // force le chargement (hibernate)
+    protected Either<Exception, Application> persist(Application application) {
+        return right(application);
+    }
+
+    @Override
+    protected Either<Exception, Application> postPersist(Application application) {
+        return right(application.withDomaines(application.domaines())); // force le chargement (hibernate)
     }
 }
