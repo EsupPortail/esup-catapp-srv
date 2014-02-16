@@ -6,6 +6,7 @@ import lombok.Value;
 import lombok.experimental.Accessors;
 import lombok.experimental.Wither;
 import org.codehaus.jackson.annotate.JsonAutoDetect;
+import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.esupportail.catappsrvs.model.Application;
 
@@ -18,6 +19,7 @@ public class ApplicationDTO implements IDTO<Application> {
     String code, titre, libelle, url, accessibilite, description, groupe;
     String[] domaines;
 
+    @JsonCreator
     public static ApplicationDTO applicationDTO(@JsonProperty("code") String code,
                                                 @JsonProperty("titre") String titre,
                                                 @JsonProperty("libelle") String libelle,

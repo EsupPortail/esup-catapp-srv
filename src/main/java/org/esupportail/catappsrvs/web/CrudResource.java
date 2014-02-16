@@ -24,7 +24,7 @@ import static org.esupportail.catappsrvs.model.Versionned.Version;
 import static org.esupportail.catappsrvs.web.dto.Validations.validCode;
 import static org.esupportail.catappsrvs.web.utils.Functions.treatErrors;
 
-abstract class CrudResource<T, D extends IDTO<T>> {
+public abstract class CrudResource<T, D extends IDTO<T>> {
     protected final ICrud<T> srv;
 
     protected CrudResource(ICrud<T> srv) { this.srv = srv; }
@@ -65,7 +65,7 @@ abstract class CrudResource<T, D extends IDTO<T>> {
                     }
                 })
                 .validation(
-                        treatErrors("Erreur de lecture d'un domaine"),
+                        treatErrors("Erreur de lecture d'une entité"),
                         Function.<Response>identity());
     }
 
@@ -91,7 +91,7 @@ abstract class CrudResource<T, D extends IDTO<T>> {
                     }
                 })
                 .validation(
-                        treatErrors("Erreur de mise à jour d'un Domaine"),
+                        treatErrors("Erreur de mise à jour d'une entité"),
                         Function.<Response>identity());
     }
 
@@ -107,7 +107,7 @@ abstract class CrudResource<T, D extends IDTO<T>> {
                     }
                 })
                 .validation(
-                        treatErrors("Erreur d'effacement d'un Domaine"),
+                        treatErrors("Erreur d'effacement d'une entité"),
                         Function.<Response>identity());
     }
 

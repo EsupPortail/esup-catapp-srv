@@ -68,7 +68,7 @@ public final class ApplicationResource extends CrudResource<Application, Applica
     }
 
     @Override
-    protected Validation<Exception, Response> createResp(Application app, final UriInfo uriInfo) {
+    protected Validation<Exception, Response> readResp(Application app, final UriInfo uriInfo) {
         try {
             final ResponseBuilder domsBuilder =
                     app.domaines().foldLeft(
@@ -91,7 +91,7 @@ public final class ApplicationResource extends CrudResource<Application, Applica
     }
 
     @Override
-    protected Validation<Exception, Response> readResp(Application app, UriInfo uriInfo) {
+    protected Validation<Exception, Response> createResp(Application app, UriInfo uriInfo) {
         try {
             final UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
             final URI location = uriBuilder.path(app.code().value()).build();
