@@ -7,11 +7,10 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.Wither;
-import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.Immutable;
-import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.*;
 
 import javax.persistence.*;
+import javax.persistence.Entity;
 import java.util.ArrayList;
 
 import static fj.data.List.iterableList;
@@ -42,9 +41,9 @@ public final class Domaine implements Versionned<Domaine>, HasCode<Domaine> {
     final Domaine parent;
 
     @OneToMany(mappedBy = "parent")
-    final java.util.List<Domaine> sousDomaines;
+    final java.util.List<Domaine> domaines;
 
-    @ManyToMany @BatchSize(size = 5)
+    @ManyToMany
     @JoinTable(name="DOMAINE_APPLICATION",
             joinColumns=
             @JoinColumn(name="domaine_pk", referencedColumnName="pk"),
@@ -52,13 +51,14 @@ public final class Domaine implements Versionned<Domaine>, HasCode<Domaine> {
             @JoinColumn(name="application_pk", referencedColumnName="pk"))
     final java.util.List<Application> applications;
 
+    @SuppressWarnings("UnusedDeclaration")
     private Domaine() { // for hibernate
         pk = null;
         version = null;
         code = null;
         libelle = null;
         parent = null;
-        sousDomaines = null;
+        domaines = null;
         applications = null;
     }
 
@@ -67,14 +67,14 @@ public final class Domaine implements Versionned<Domaine>, HasCode<Domaine> {
                     Code code,
                     Libelle libelle,
                     Domaine parent,
-                    java.util.List<Domaine> sousDomaines,
+                    java.util.List<Domaine> domaines,
                     java.util.List<Application> applications) {
         this.pk = pk;
         this.version = version;
         this.code = code;
         this.libelle = libelle;
         this.parent = parent;
-        this.sousDomaines = sousDomaines;
+        this.domaines = domaines;
         this.applications = applications;
     }
 
@@ -89,19 +89,23 @@ public final class Domaine implements Versionned<Domaine>, HasCode<Domaine> {
                 new ArrayList<>(applications.toCollection()));
     }
 
-    public Domaine withParent(final Option<Domaine> parent) {
-        return new Domaine(pk, version, code, libelle, parent.toNull(), sousDomaines, applications);
+    public Domaine withNullPk() {
+        return new Domaine(null, version, code, libelle, parent, domaines, applications);
     }
 
-    public Domaine withSousDomaines(final List<Domaine> sousDomaines) {
+    public Domaine withParent(final Option<Domaine> parent) {
+        return new Domaine(pk, version, code, libelle, parent.toNull(), domaines, applications);
+    }
+
+    public Domaine withDomaines(final List<Domaine> sousDomaines) {
         return new Domaine(pk, version, code, libelle, parent, new ArrayList<>(sousDomaines.toCollection()), applications);
     }
 
     public Domaine withApplications(final List<Application> applications) {
-        return new Domaine(pk, version, code, libelle, parent, sousDomaines, new ArrayList<>(applications.toCollection()));
+        return new Domaine(pk, version, code, libelle, parent, domaines, new ArrayList<>(applications.toCollection()));
     }
 
-    public Long pk() { return pk; }
+    public Option<Long> pk() { return fromNull(pk); }
 
     public Version version() { return version; }
 
@@ -111,7 +115,7 @@ public final class Domaine implements Versionned<Domaine>, HasCode<Domaine> {
 
     public Option<Domaine> parent() { return fromNull(parent); }
 
-    public List<Domaine> sousDomaines() { return iterableList(sousDomaines); }
+    public List<Domaine> domaines() { return iterableList(domaines); }
 
     public List<Application> applications() { return iterableList(applications); }
 }

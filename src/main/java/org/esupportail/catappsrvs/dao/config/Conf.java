@@ -19,11 +19,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
 import java.util.Properties;
-
-import static fj.Bottom.error;
 
 @Configuration
 @EnableTransactionManagement
@@ -34,8 +31,8 @@ class Conf {
     @Value("${jpa.database.type}")
     private String databaseType;
 
-    @Value("#{systemProperties[generateDdl]?:false}")
-    private boolean generateDdl;
+    @Value("${hibernate.hbm2ddl.auto:validate}")
+    private String hbm2ddlAuto;
 
     @Value("${hibernate.show_sql}")
     private boolean showSql;
@@ -78,8 +75,7 @@ class Conf {
 
 
     private Properties jpaProperties() {
-        Properties props = new Properties();
-        props.put("hibernate.batch_fetch_style", "legacy");
+        final Properties props = new Properties();
         props.put("hibernate.cache.provider_class", "org.hibernate.cache.NoCacheProvider");
         props.put("hibernate.cache.use_query_cache", false);
         props.put("hibernate.cache.use_second_level_cache", false);
@@ -87,15 +83,13 @@ class Conf {
         props.put("hibernate.format_sql", formatSql);
         props.put("hibernate.use_sql_comments", useSqlComments);
         props.put("hibernate.temp.use_jdbc_metadata_defaults", false);
-
-        //props.put("hibernate.hbm2ddl.auto", "create-drop");
-
+        props.put("hibernate.hbm2ddl.auto", hbm2ddlAuto);
         return props;
     }
 
     private JpaVendorAdapter vendorAdapter() {
         HibernateJpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
-        adapter.setGenerateDdl(generateDdl);
+//        adapter.setGenerateDdl(generateDdl);
         adapter.setDatabase(Database.valueOf(databaseType));
         return adapter;
     }

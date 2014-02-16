@@ -1,9 +1,6 @@
 package org.esupportail.catappsrvs.web.dto;
 
 import fj.F;
-import fj.F4;
-import fj.P1;
-import fj.data.Either;
 import fj.data.List;
 import fj.data.Option;
 import lombok.AccessLevel;
@@ -72,11 +69,19 @@ public final class Conversions {
                 domaine.code().value(),
                 domaine.libelle().value(),
                 domaine.parent().option("", domCode),
-                domaine.sousDomaines().map(domCode).array(String[].class),
+                domaine.domaines().map(domCode).array(String[].class),
                 domaine.applications().map(appCode).array(String[].class));
     }
 
-    public static Either<Exception, ApplicationDTO> applicationToDTO(Application application) {
-        return null;
+    public static ApplicationDTO applicationToDTO(Application app) {
+        return ApplicationDTO.applicationDTO(
+                app.code().value(),
+                app.titre().value(),
+                app.libelle().value(),
+                app.url().toString(),
+                app.accessibilite().name(),
+                app.description().value(),
+                app.groupe().value(),
+                app.domaines().map(domCode).array(String[].class));
     }
 }

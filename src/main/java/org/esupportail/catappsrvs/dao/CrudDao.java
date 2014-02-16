@@ -7,7 +7,7 @@ import com.mysema.query.support.Expressions;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.path.PathBuilder;
-
+import com.mysema.query.types.path.PathBuilderFactory;
 import fj.F;
 import fj.P1;
 import fj.Unit;
@@ -17,7 +17,6 @@ import org.esupportail.catappsrvs.model.HasCode;
 import org.esupportail.catappsrvs.model.Versionned;
 
 import javax.persistence.EntityManager;
-
 import java.util.NoSuchElementException;
 
 import static com.mysema.query.jpa.JPAExpressions.max;
@@ -30,29 +29,30 @@ import static org.esupportail.catappsrvs.model.Versionned.Version;
 import static org.esupportail.catappsrvs.model.Versionned.Version.*;
 
 abstract class CrudDao<T extends Versionned<T> & HasCode<T>> implements ICrudDao<T> {
+    private final EntityPath<T> ent;
+    private final Class<T> clazz;
+    private final PathBuilder<Code> codePath;
+    private final PathBuilder<Version> versionPath;
+
     protected final EntityManager entityManager;
-    protected final EntityPath<T> ent;
-    protected final PathBuilder<T> tPath;
-    protected final Expression<Version> lastVersion;
-    protected final PathBuilder<Code> codePath;
-    protected final PathBuilder<Version> versionPath;
+    protected final PathBuilderFactory pathBuilderFactory = new PathBuilderFactory();
 
     protected CrudDao(EntityManager entityManager, EntityPath<T> ent, Class<T> clazz) {
         this.entityManager = entityManager;
         this.ent = ent;
-        tPath = new PathBuilder<>(clazz, ent.getMetadata());
+        this.clazz = clazz;
+        final PathBuilder<T> tPath = pathBuilderFactory.create(clazz);
         codePath = tPath.get("code", Code.class);
         versionPath = tPath.get("version", Version.class);
-        lastVersion = max(tPath.getSet("version", Version.class));
     }
 
-    protected abstract Either<Exception, T> prePersist(T t);
+    protected abstract Either<Exception, T> prepare(T t);
     protected abstract Either<Exception, T> persist(T t);
-    protected abstract Either<Exception, T> postPersist(T t);
+    protected abstract Either<Exception, T> refine(T t);
 
     @Override
     public final Either<Exception, T> create(T t) {
-        return prePersist(t)
+        return prepare(t)
                 .right()
                 .bind(new F<T, Either<Exception, T>>() {
                     public Either<Exception, T> f(T readyT) {
@@ -69,7 +69,7 @@ abstract class CrudDao<T extends Versionned<T> & HasCode<T>> implements ICrudDao
                         return Expressions.constant(version);
                     }
                 })
-                .orSome(new JPASubQuery().from(ent).where(codePath.eq(code)).unique(lastVersion));
+                .orSome(new JPASubQuery().from(ent).where(codePath.eq(code)).unique(lastVersion(clazz)));
         try {
             final JPAQuery query =
                     from(ent).where(codePath.eq(code).and(versionPath.eq(realVersion)));
@@ -82,7 +82,7 @@ abstract class CrudDao<T extends Versionned<T> & HasCode<T>> implements ICrudDao
                     .right()
                     .bind(new F<T, Either<Exception, T>>() {
                         public Either<Exception, T> f(T t) {
-                            return postPersist(t);
+                            return refine(t);
                         }
                     });
         } catch (Exception e) {
@@ -96,7 +96,7 @@ abstract class CrudDao<T extends Versionned<T> & HasCode<T>> implements ICrudDao
                 .right()
                 .bind(new F<Version, Either<Exception, T>>() {
                     public Either<Exception, T> f(final Version version) {
-                        return prePersist(t)
+                        return prepare(t)
                                 .right()
                                 .bind(new F<T, Either<Exception, T>>() {
                                     public Either<Exception, T> f(T readyT) {
@@ -126,9 +126,13 @@ abstract class CrudDao<T extends Versionned<T> & HasCode<T>> implements ICrudDao
         return new JPAQuery(entityManager).from(path);
     }
 
+    protected final <U> Expression<Version> lastVersion(Class<U> clazz) {
+        return max(pathBuilderFactory.create(clazz).getSet("version", Version.class));
+    }
+
     protected final Either<Exception, Version> searchLastVersion(T t) {
         try {
-            return fromNull(from(ent).where(codePath.eq(t.code())).uniqueResult(lastVersion))
+            return fromNull(from(ent).where(codePath.eq(t.code())).uniqueResult(lastVersion(clazz)))
                     .toEither(new P1<Exception>() {
                         public Exception _1() {
                             return new Exception("La dernière version de l'entité n'a pu être récupérée");

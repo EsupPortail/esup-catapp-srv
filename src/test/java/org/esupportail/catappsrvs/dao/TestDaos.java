@@ -15,7 +15,6 @@ import org.dbunit.dataset.IDataSet;
 import org.dbunit.operation.DatabaseOperation;
 import org.esupportail.catappsrvs.model.Application;
 import org.esupportail.catappsrvs.model.Domaine;
-import org.esupportail.catappsrvs.model.utils.Equals;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,27 +35,25 @@ import java.util.NoSuchElementException;
 import static fj.Bottom.error;
 import static fj.data.List.list;
 import static fj.data.List.single;
-import static fj.data.Option.fromNull;
 import static fj.data.Option.some;
-import static org.dbunit.dataset.datatype.DataType.BIGINT;
-import static org.dbunit.dataset.datatype.DataType.INTEGER;
-import static org.dbunit.dataset.datatype.DataType.VARCHAR;
-import static org.esupportail.catappsrvs.model.Application.Accessibilite.*;
-import static org.esupportail.catappsrvs.model.Application.*;
-import static org.esupportail.catappsrvs.model.CommonTypes.Code.*;
-import static org.esupportail.catappsrvs.model.CommonTypes.Description.*;
-import static org.esupportail.catappsrvs.model.CommonTypes.LdapGroup.*;
-import static org.esupportail.catappsrvs.model.CommonTypes.Libelle.*;
-import static org.esupportail.catappsrvs.model.CommonTypes.Titre.*;
-import static org.esupportail.catappsrvs.model.Domaine.*;
-import static org.esupportail.catappsrvs.model.Versionned.Version.*;
+import static org.dbunit.dataset.datatype.DataType.*;
+import static org.esupportail.catappsrvs.model.Application.Accessibilite.Accessible;
+import static org.esupportail.catappsrvs.model.Application.Version;
+import static org.esupportail.catappsrvs.model.Application.application;
+import static org.esupportail.catappsrvs.model.CommonTypes.Code.code;
+import static org.esupportail.catappsrvs.model.CommonTypes.Description.description;
+import static org.esupportail.catappsrvs.model.CommonTypes.LdapGroup.ldapGroup;
+import static org.esupportail.catappsrvs.model.CommonTypes.Libelle.libelle;
+import static org.esupportail.catappsrvs.model.CommonTypes.Titre.titre;
+import static org.esupportail.catappsrvs.model.Domaine.domaine;
+import static org.esupportail.catappsrvs.model.Versionned.Version.version;
 import static org.esupportail.catappsrvs.model.utils.Equals.domaineCompleteEq;
 import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestConf.class)
-@ActiveProfiles("JDBC")
+@ActiveProfiles({"TEST", "JDBC"})
 @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
 public class TestDaos {
 
@@ -65,8 +62,6 @@ public class TestDaos {
 
     @Inject
     IDomaineDao domaineDao;
-
-    IDataSet dataSet;
 
     IDatabaseConnection dbunitConn;
 
@@ -80,7 +75,7 @@ public class TestDaos {
                     buildUrl("http://toto.fr"),
                     Accessible,
                     ldapGroup("UR1:57SI"),
-                    list(this.firstDom));
+                    single(this.firstDom));
 
     private final Domaine firstDom =
             domaine(version(1),
@@ -88,12 +83,12 @@ public class TestDaos {
                     libelle("Domaine 1"),
                     Option.<Domaine>some(null),
                     List.<Domaine>nil(),
-                    list(firstApp));
+                    single(firstApp));
 
     @Before
     public void setUp() throws DatabaseUnitException, SQLException {
-        dataSet = new DefaultDataSet(new DefaultTable[] {
-                new DefaultTable("Domaine", new Column[]{
+        final IDataSet dataSet = new DefaultDataSet(new DefaultTable[] {
+                new DefaultTable("domaine", new Column[]{
                         new Column("pk", BIGINT),
                         new Column("version", INTEGER),
                         new Column("code", VARCHAR),
@@ -102,7 +97,7 @@ public class TestDaos {
                 }){{
                     addRow(domaineToRow(1L, firstDom));
                 }},
-                new DefaultTable("Application", new Column[]{
+                new DefaultTable("application", new Column[]{
                         new Column("pk", BIGINT),
                         new Column("version", INTEGER),
                         new Column("code", VARCHAR),
@@ -115,7 +110,7 @@ public class TestDaos {
                 }){{
                     addRow(applicationToRow(1L, firstApp));
                 }},
-                new DefaultTable("DOMAINE_APPLICATION", new Column[]{
+                new DefaultTable("domaine_application", new Column[]{
                         new Column("domaine_pk", BIGINT),
                         new Column("application_pk", BIGINT)
                 }){{
@@ -149,7 +144,7 @@ public class TestDaos {
         for (Domaine domaine : result.right()) {
             assertTrue(
                     "create doit se traduire par l'affectation d'une clé primaire",
-                    fromNull(domaine.pk()).isSome());
+                    domaine.pk().isSome());
             assertTrue(
                     "create doit se traduire par l'affectation d'une version égale à 1",
                     domaine.version().equals(version(1)));
@@ -178,12 +173,13 @@ public class TestDaos {
                 libelle("Domaine 2"),
                 Option.<Domaine>none(),
                 List.<Domaine>nil(),
-                list(firstApp));
+                List.<Application>nil());
         domaineDao.create(domToCreate);
 
         final Domaine domToUpdate = firstDom
                 .withLibelle(libelle("UPDATED Domaine 1"))
-                .withSousDomaines(single(domToCreate));
+                .withDomaines(single(domToCreate))
+                .withApplications(single(firstApp));
 
         final Either<Exception, Domaine> dom = domaineDao.update(domToUpdate);
 
@@ -193,13 +189,13 @@ public class TestDaos {
             throw new AssertionError(e);
 
         for (P2<Domaine, Domaine> pair : dom.right().toList().zip(readDom.right().toList())) {
+            final Domaine refDom = domToUpdate
+                    .withDomaines(single(domToCreate.withVersion(version(2)))) // une mise à jour parent se traduit par une mise à jour enfant
+                    .withApplications(single(firstApp.withVersion(firstApp.version().plus(1))))
+                    .withVersion(domToUpdate.version().plus(1));
             assertTrue("update doit mettre à jour les données",
-                    domaineCompleteEq.eq(
-                            domToUpdate
-                                    .withSousDomaines(single(domToCreate.withVersion(version(1))))
-                                    .withVersion(domToUpdate.version().plus(1)),
-                            pair._2())
-                    && domaineCompleteEq.eq(pair._1(), pair._2()));
+                    domaineCompleteEq.eq(refDom, pair._2())
+                            && domaineCompleteEq.eq(pair._1(), pair._2()));
             assertTrue("update doit se traduire par une incrémentation de la version",
                     pair._1().version().equals(version(2)) && pair._2().version().equals(version(2)));
         }
@@ -239,7 +235,7 @@ public class TestDaos {
                 .parent()
                 .map(new F<Domaine, Long>() {
                     public Long f(Domaine parent) {
-                        return parent.pk();
+                        return parent.pk().toNull();
                     }
                 })
                 .toNull();

@@ -4,6 +4,7 @@ import fj.F2;
 import fj.P4;
 import fj.P5;
 import fj.data.List;
+import fj.data.Option;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -19,6 +20,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import static fj.data.List.iterableList;
+import static fj.data.Option.fromNull;
 import static org.esupportail.catappsrvs.model.CommonTypes.*;
 
 @EqualsAndHashCode(of = {"code", "version"}, doNotUseGetters = true)
@@ -127,13 +129,18 @@ public final class Application implements Versionned<Application>, HasCode<Appli
                 }
             };
 
+    public Application withNullPk() {
+        return new Application(null, version, code, titre, libelle,
+                description, url, accessibilite, groupe, domaines);
+    }
+
     public Application withDomaines(final List<Domaine> domaines) {
         return new Application(pk, version, code, titre, libelle,
                 description, url, accessibilite, groupe,
                 new ArrayList<>(domaines.toCollection()));
     }
 
-    public Long pk() { return pk; }
+    public Option<Long> pk() { return fromNull(pk); }
 
     public List<Domaine> domaines() { return iterableList(domaines); }
 }

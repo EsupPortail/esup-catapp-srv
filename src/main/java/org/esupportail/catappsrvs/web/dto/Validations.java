@@ -20,8 +20,28 @@ public final class Validations {
         return validNotNull("code", t);
     }
 
+    public static <T> Validation<String, T> validTitre(T t) {
+        return validNotNull("titre", t);
+    }
+
     public static <T> Validation<String, T> validLibelle(T t) {
         return validNotNull("libelle", t);
+    }
+
+    public static <T> Validation<String, T> validUrl(T t) {
+        return validNotNull("url", t);
+    }
+
+    public static <T> Validation<String, T> validAccess(T t) {
+        return validNotNull("accessibilite", t);
+    }
+
+    public static <T> Validation<String, T> validDescr(T t) {
+        return validNotNull("description", t);
+    }
+
+    public static <T> Validation<String, T> validGroupe(T t) {
+        return validNotNull("groupe", t);
     }
 
     public static <T> Validation<String, T> validDomaines(T t) {

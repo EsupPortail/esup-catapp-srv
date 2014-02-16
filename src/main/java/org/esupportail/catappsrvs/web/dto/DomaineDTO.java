@@ -8,13 +8,14 @@ import lombok.experimental.Wither;
 import org.codehaus.jackson.annotate.JsonAutoDetect;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.esupportail.catappsrvs.model.Domaine;
 
 import static org.codehaus.jackson.annotate.JsonAutoDetect.Visibility.ANY;
 
 @JsonAutoDetect(fieldVisibility = ANY)
 @Value @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Accessors(fluent = true) @Wither
-public class DomaineDTO {
+public class DomaineDTO implements IDTO<Domaine> {
     String code, libelle, parent;
     String[] domaines, applications;
 

@@ -4,14 +4,11 @@ import fj.*;
 import fj.data.List;
 import fj.data.Option;
 import org.esupportail.catappsrvs.model.Application;
-import org.esupportail.catappsrvs.model.CommonTypes;
 import org.esupportail.catappsrvs.model.Domaine;
-import org.esupportail.catappsrvs.model.Versionned;
 
 import java.net.URL;
 
 import static fj.Bottom.error;
-import static fj.Function.curry;
 import static fj.P.p;
 import static org.esupportail.catappsrvs.model.Application.Accessibilite;
 import static org.esupportail.catappsrvs.model.CommonTypes.*;
@@ -65,7 +62,7 @@ public final class Equals {
                             domaine.code(),
                             domaine.libelle(),
                             domaine.parent(),
-                            domaine.sousDomaines(),
+                            domaine.domaines(),
                             domaine.applications());
                 }
             });
