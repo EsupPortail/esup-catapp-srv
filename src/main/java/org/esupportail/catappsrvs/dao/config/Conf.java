@@ -89,7 +89,6 @@ class Conf {
 
     private JpaVendorAdapter vendorAdapter() {
         HibernateJpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
-//        adapter.setGenerateDdl(generateDdl);
         adapter.setDatabase(Database.valueOf(databaseType));
         return adapter;
     }
