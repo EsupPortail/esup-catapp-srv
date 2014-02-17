@@ -13,7 +13,7 @@ import org.esupportail.catappsrvs.model.Application;
 import org.esupportail.catappsrvs.model.Domaine;
 import org.esupportail.catappsrvs.services.IApplication;
 import org.esupportail.catappsrvs.services.ICrud;
-import org.esupportail.catappsrvs.web.dto.ApplicationDTO;
+import org.esupportail.catappsrvs.web.dto.JsApp;
 import org.esupportail.catappsrvs.web.utils.Functions;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +28,7 @@ import static fj.data.Validation.fail;
 import static fj.data.Validation.failNEL;
 import static fj.data.Validation.success;
 import static javax.ws.rs.core.Response.ResponseBuilder;
+import static org.esupportail.catappsrvs.web.dto.JsApp.Acces;
 import static org.esupportail.catappsrvs.web.dto.Conversions.*;
 import static org.esupportail.catappsrvs.web.dto.Validations.*;
 import static org.esupportail.catappsrvs.web.utils.Functions.arrayToList;
@@ -43,7 +44,7 @@ import static org.esupportail.catappsrvs.model.Versionned.Version.*;
 @Path("application") // jaxrs
 @Component // spring
 @SuppressWarnings("SpringJavaAutowiringInspection") // intellij
-public final class ApplicationResource extends CrudResource<Application, ApplicationDTO> {
+public final class ApplicationResource extends CrudResource<Application, JsApp> {
     private ApplicationResource(ICrud<Application> srv) {
         super(srv);
     }
@@ -53,12 +54,12 @@ public final class ApplicationResource extends CrudResource<Application, Applica
     }
 
     @Override
-    protected Validation<Exception, Application> validAndBuild(ApplicationDTO app) {
+    protected Validation<Exception, Application> validAndBuild(JsApp app) {
         return validDomaines(app.domaines()).map(arrayToList).nel()
                 .accumulate(sm,
                         validGroupe(app.groupe()).nel(),
                         validDescr(app.description()).nel(),
-                        validAccess(app.accessibilite()).nel(),
+                        validAccess(app.acces()).nel(),
                         validUrl(app.url()).nel().bind(buildUrl),
                         validLibelle(app.libelle()).nel(),
                         validTitre(app.titre()).nel(),
@@ -101,9 +102,9 @@ public final class ApplicationResource extends CrudResource<Application, Applica
         }
     }
 
-    private final F8<List<String>, String, String, String, URL, String, String, String, Application> buildApp =
-            new F8<List<String>, String, String, String, URL, String, String, String, Application>() {
-                public Application f(List<String> doms, String grp, String descr, String access, URL url, String lib, String titre, String code) {
+    private final F8<List<String>, String, String, Acces, URL, String, String, String, Application> buildApp =
+            new F8<List<String>, String, String, Acces, URL, String, String, String, Application>() {
+                public Application f(List<String> doms, String grp, String descr, Acces access, URL url, String lib, String titre, String code) {
                     return Application.application(
                             version(-1),
                             code(code),
@@ -111,7 +112,7 @@ public final class ApplicationResource extends CrudResource<Application, Applica
                             libelle(lib),
                             description(descr),
                             url,
-                            Accessibilite.valueOf(access),
+                            Accessibilite.valueOf(access.name()),
                             ldapGroup(grp),
                             doms.map(domWithCode));
                 }

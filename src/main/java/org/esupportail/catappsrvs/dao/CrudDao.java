@@ -12,6 +12,7 @@ import fj.F;
 import fj.P1;
 import fj.Unit;
 import fj.data.Either;
+import fj.data.List;
 import fj.data.Option;
 import org.esupportail.catappsrvs.model.HasCode;
 import org.esupportail.catappsrvs.model.Versionned;
@@ -23,6 +24,7 @@ import static com.mysema.query.jpa.JPAExpressions.max;
 import static fj.Unit.unit;
 import static fj.data.Either.left;
 import static fj.data.Either.right;
+import static fj.data.List.iterableList;
 import static fj.data.Option.fromNull;
 import static org.esupportail.catappsrvs.model.CommonTypes.Code;
 import static org.esupportail.catappsrvs.model.Versionned.Version;
@@ -49,6 +51,15 @@ abstract class CrudDao<T extends Versionned<T> & HasCode<T>> implements ICrudDao
     protected abstract Either<Exception, T> prepare(T t);
     protected abstract Either<Exception, T> persist(T t);
     protected abstract Either<Exception, T> refine(T t);
+
+    @Override
+    public Either<Exception, Boolean> exists(Code code) {
+        try {
+            return right(from(ent).where(codePath.eq(code)).exists());
+        } catch (Exception e) {
+            return left(e);
+        }
+    }
 
     @Override
     public final Either<Exception, T> create(T t) {
@@ -83,6 +94,31 @@ abstract class CrudDao<T extends Versionned<T> & HasCode<T>> implements ICrudDao
                     .bind(new F<T, Either<Exception, T>>() {
                         public Either<Exception, T> f(T t) {
                             return refine(t);
+                        }
+                    });
+        } catch (Exception e) {
+            return left(e);
+        }
+    }
+
+    @Override
+    public Either<Exception, List<T>> list() {
+        final PathBuilder<T> subPath = pathBuilderFactory.create(clazz);
+        final PathBuilder<Code> subCodePath = subPath.get("code", Code.class);
+        try {
+            return Either.<Exception, List<T>>right(
+                    iterableList(from(ent)
+                            .where(versionPath.eq(new JPASubQuery()
+                                    .from(ent).where(codePath.eq(subCodePath)).unique(lastVersion(clazz))))
+                            .list(ent)))
+                    .right()
+                    .bind(new F<List<T>, Either<Exception, List<T>>>() {
+                        public Either<Exception, List<T>> f(List<T> ts) {
+                            return Either.sequenceRight(ts.map(new F<T, Either<Exception, T>>() {
+                                public Either<Exception, T> f(T t) {
+                                    return refine(t);
+                                }
+                            }));
                         }
                     });
         } catch (Exception e) {

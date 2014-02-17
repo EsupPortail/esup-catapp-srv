@@ -145,6 +145,11 @@
                 <version>3.3.1</version>
             </dependency>
             <dependency>
+                <groupId>com.unboundid</groupId>
+                <artifactId>unboundid-ldapsdk</artifactId>
+                <version>2.3.6</version>
+            </dependency>
+            <dependency>
                 <groupId>org.functionaljava</groupId>
                 <artifactId>functionaljava</artifactId>
                 <version>3.1</version>
@@ -291,6 +296,10 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.unboundid</groupId>
+            <artifactId>unboundid-ldapsdk</artifactId>
         </dependency>
         <dependency>
             <groupId>org.functionaljava</groupId>

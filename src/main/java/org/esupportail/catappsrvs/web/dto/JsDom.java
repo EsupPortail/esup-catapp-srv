@@ -15,17 +15,17 @@ import static org.codehaus.jackson.annotate.JsonAutoDetect.Visibility.ANY;
 @JsonAutoDetect(fieldVisibility = ANY)
 @Value @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Accessors(fluent = true) @Wither
-public class DomaineDTO implements IDTO<Domaine> {
+public class JsDom implements JsHasCode<Domaine> {
     String code, libelle, parent;
     String[] domaines, applications;
 
     @JsonCreator
-    public static DomaineDTO domaineDTO(
+    public static JsDom jsDom(
             @JsonProperty("code") String code,
-            @JsonProperty("libelle") String libelle,
+            @JsonProperty("wording") String libelle,
             @JsonProperty("parent") String parent,
-            @JsonProperty("domaines") String[] domaines,
+            @JsonProperty("domains") String[] domaines,
             @JsonProperty("applications") String[] applications) {
-        return new DomaineDTO(code, libelle, parent, domaines, applications);
+        return new JsDom(code, libelle, parent, domaines, applications);
     }
 }

@@ -3,7 +3,6 @@ package org.esupportail.catappsrvs.web;
 import fj.F2;
 import fj.F6;
 import fj.data.List;
-import fj.data.Option;
 import fj.data.Validation;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -12,7 +11,7 @@ import org.esupportail.catappsrvs.model.Application;
 import org.esupportail.catappsrvs.model.Domaine;
 import org.esupportail.catappsrvs.services.ICrud;
 import org.esupportail.catappsrvs.services.IDomaine;
-import org.esupportail.catappsrvs.web.dto.DomaineDTO;
+import org.esupportail.catappsrvs.web.dto.JsDom;
 import org.esupportail.catappsrvs.web.utils.Functions;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +23,7 @@ import java.net.URI;
 
 import static fj.Function.curry;
 import static fj.data.Option.fromNull;
+import static fj.data.Option.fromString;
 import static fj.data.Validation.fail;
 import static fj.data.Validation.success;
 import static javax.ws.rs.core.Response.ResponseBuilder;
@@ -36,10 +36,10 @@ import static org.esupportail.catappsrvs.web.dto.Validations.*;
 import static org.esupportail.catappsrvs.web.utils.Functions.arrayToList;
 
 @Slf4j @Getter(AccessLevel.NONE) // lombok
-@Path("domaine") // jaxrs
+@Path("domain") // jaxrs
 @Component // spring
 @SuppressWarnings("SpringJavaAutowiringInspection") // intellij
-public final class DomaineResource extends CrudResource<Domaine, DomaineDTO> {
+public final class DomaineResource extends CrudResource<Domaine, JsDom> {
     private DomaineResource(ICrud<Domaine> srv) {
         super(srv);
     }
@@ -97,10 +97,10 @@ public final class DomaineResource extends CrudResource<Domaine, DomaineDTO> {
     }
 
     @Override
-    protected Validation<Exception, Domaine> validAndBuild(DomaineDTO domaine) {
+    protected Validation<Exception, Domaine> validAndBuild(JsDom domaine) {
         return validApplications(domaine.applications()).map(arrayToList).nel()
                 .accumapply(sm, validDomaines(domaine.domaines()).map(arrayToList).nel()
-                        .accumapply(sm, Validation.<String, Option<String>>success(fromNull(domaine.parent())).nel()
+                        .accumapply(sm, validParent(domaine.parent()).nel()
                                 .accumapply(sm, validLibelle(domaine.libelle()).nel()
                                         .accumapply(sm, validCode(domaine.code()).nel()
                                                 .accumapply(sm, Validation.<String, Integer>success(-1).nel()
@@ -108,14 +108,14 @@ public final class DomaineResource extends CrudResource<Domaine, DomaineDTO> {
                 .f().map(Functions.fieldsException);
     }
 
-    private final F6<Integer,String,String,Option<String>,List<String>,List<String>,Domaine> buildDomain =
-            new F6<Integer, String, String, Option<String>, List<String>, List<String>, Domaine>() {
-                public Domaine f(Integer ver, String code, String lib, Option<String> parent, List<String> ssdoms, List<String> apps) {
+    private final F6<Integer, String, String, String, List<String>, List<String>, Domaine> buildDomain =
+            new F6<Integer, String, String, String, List<String>, List<String>, Domaine>() {
+                public Domaine f(Integer ver, String code, String lib, String parent, List<String> ssdoms, List<String> apps) {
                     return domaine(
                             version(ver),
                             code(code),
                             libelle(lib),
-                            parent.map(domWithCode),
+                            fromString(parent).map(domWithCode),
                             ssdoms.map(domWithCode),
                             apps.map(appWithCode));
                 }

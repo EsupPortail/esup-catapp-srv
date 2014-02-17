@@ -16,6 +16,7 @@ import static org.esupportail.catappsrvs.model.CommonTypes.Libelle.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Titre.*;
 import static org.esupportail.catappsrvs.model.Domaine.*;
 import static org.esupportail.catappsrvs.model.Versionned.Version.*;
+import static org.esupportail.catappsrvs.web.dto.JsApp.Acces;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Conversions {
@@ -64,8 +65,8 @@ public final class Conversions {
         }
     };
 
-    public static DomaineDTO domaineToDTO(Domaine domaine) {
-        return DomaineDTO.domaineDTO(
+    public static JsDom domaineToDTO(Domaine domaine) {
+        return JsDom.jsDom(
                 domaine.code().value(),
                 domaine.libelle().value(),
                 domaine.parent().option("", domCode),
@@ -73,13 +74,13 @@ public final class Conversions {
                 domaine.applications().map(appCode).array(String[].class));
     }
 
-    public static ApplicationDTO applicationToDTO(Application app) {
-        return ApplicationDTO.applicationDTO(
+    public static JsApp applicationToDTO(Application app) {
+        return JsApp.jsApp(
                 app.code().value(),
                 app.titre().value(),
                 app.libelle().value(),
                 app.url().toString(),
-                app.accessibilite().name(),
+                Acces.valueOf(app.accessibilite().name()),
                 app.description().value(),
                 app.groupe().value(),
                 app.domaines().map(domCode).array(String[].class));

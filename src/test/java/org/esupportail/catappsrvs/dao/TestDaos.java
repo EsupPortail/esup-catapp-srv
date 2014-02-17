@@ -201,6 +201,12 @@ public class TestDaos {
         }
     }
 
+    @Test
+    public void testList() {
+        Either<Exception, List<Domaine>> listDomaines = domaineDao.list();
+        assertTrue("list ne devrait pas lever d'exception", listDomaines.isRight());
+    }
+
     @Test @Transactional
     public void testDelete() {
         assertTrue("delete ne doit pas lever d'exception", domaineDao.delete(firstDom.code()).isRight());

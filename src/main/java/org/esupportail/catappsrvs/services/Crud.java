@@ -2,10 +2,10 @@ package org.esupportail.catappsrvs.services;
 
 import fj.Unit;
 import fj.data.Either;
+import fj.data.List;
 import fj.data.Option;
 import org.esupportail.catappsrvs.dao.ICrudDao;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -31,6 +31,15 @@ abstract class Crud<T, D extends ICrudDao<T>> implements ICrud<T> {
     }
 
     @Override
+    public Either<Exception, Boolean> exists(final Code code) {
+        return inTransaction(readTemplate, new TransactionCallback<Either<Exception, Boolean>>() {
+            public Either<Exception, Boolean> doInTransaction(TransactionStatus status) {
+                return dao.exists(code);
+            }
+        });
+    }
+
+    @Override
     public final Either<Exception, T> create(final T t) {
         return inTransaction(writeTemplate, new TransactionCallback<Either<Exception, T>>() {
             public Either<Exception, T> doInTransaction(TransactionStatus status) {
@@ -46,6 +55,15 @@ abstract class Crud<T, D extends ICrudDao<T>> implements ICrud<T> {
                return dao.read(code, version);
            }
        });
+    }
+
+    @Override
+    public Either<Exception, List<T>> list() {
+        return inTransaction(readTemplate, new TransactionCallback<Either<Exception, List<T>>>() {
+            public Either<Exception, List<T>> doInTransaction(TransactionStatus status) {
+                return dao.list();
+            }
+        });
     }
 
     @Override
