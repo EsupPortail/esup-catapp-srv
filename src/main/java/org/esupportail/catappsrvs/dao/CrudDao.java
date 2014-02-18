@@ -48,9 +48,9 @@ abstract class CrudDao<T extends Versionned<T> & HasCode<T>> implements ICrudDao
         versionPath = tPath.get("version", Version.class);
     }
 
-    protected abstract Either<Exception, T> prepare(T t);
-    protected abstract Either<Exception, T> persist(T t);
-    protected abstract Either<Exception, T> refine(T t);
+    abstract Either<Exception, T> prepare(T t);
+    abstract Either<Exception, T> persist(T t);
+    abstract Either<Exception, T> refine(T t);
 
     @Override
     public Either<Exception, Boolean> exists(Code code) {
