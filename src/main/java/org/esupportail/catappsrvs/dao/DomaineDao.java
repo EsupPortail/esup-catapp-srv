@@ -160,19 +160,6 @@ public final class DomaineDao extends CrudDao<Domaine> implements IDomaineDao {
         }
     }
 
-    private JPAQuery lastAppsQuery(Domaine domaine) {
-        return new JPAQuery(entityManager)
-                .from(otherApp).where(otherApp.version.eq(new JPASubQuery()
-                        .from(app).where(app.code.eq(otherApp.code)).unique(lastVersion(Application.class)))
-                        .and(otherApp.domaines.contains(domaine)));
-    }
-
-    private JPAQuery lastDomsQuery(Domaine domaine) {
-        return from(otherDom).where(otherDom.version.eq(new JPASubQuery()
-                .from(dom).where(dom.code.eq(otherDom.code)).unique(lastVersion(Domaine.class)))
-                .and(otherDom.parent.eq(domaine)));
-    }
-
     @Override
     public Either<Exception, Tree<Domaine>> findDomaines(final List<LdapGroup> groups) {
         final F<Either<Exception, Domaine>, Tree<Either<Exception, Domaine>>> treeFunc =
@@ -210,7 +197,6 @@ public final class DomaineDao extends CrudDao<Domaine> implements IDomaineDao {
         final Either<Exception, Tree<Domaine>> appsFilteredTree =
                 sequenceRightTree(treeFunc.f(read(code("ROOT"), Option.<Version>none())));
 
-
         return appsFilteredTree.right().map(new F<Tree<Domaine>, Tree<Domaine>>() {
             public Tree<Domaine> f(Tree<Domaine> tdoms) {
                 return Tree.bottomUp(tdoms, new F<P2<Domaine, Stream<Domaine>>, Domaine>() {
@@ -224,6 +210,19 @@ public final class DomaineDao extends CrudDao<Domaine> implements IDomaineDao {
                 });
             }
         });
+    }
+
+    private JPAQuery lastAppsQuery(Domaine domaine) {
+        return new JPAQuery(entityManager)
+                .from(otherApp).where(otherApp.version.eq(new JPASubQuery()
+                        .from(app).where(app.code.eq(otherApp.code)).unique(lastVersion(Application.class)))
+                        .and(otherApp.domaines.contains(domaine)));
+    }
+
+    private JPAQuery lastDomsQuery(Domaine domaine) {
+        return from(otherDom).where(otherDom.version.eq(new JPASubQuery()
+                .from(dom).where(dom.code.eq(otherDom.code)).unique(lastVersion(Domaine.class)))
+                .and(otherDom.parent.eq(domaine)));
     }
 
     private static <B, X> Either<X, Tree<B>> sequenceRightTree(final Tree<Either<X, B>> tree) {
