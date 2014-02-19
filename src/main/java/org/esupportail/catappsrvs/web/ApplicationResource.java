@@ -41,11 +41,11 @@ import static org.esupportail.catappsrvs.model.CommonTypes.Titre.*;
 import static org.esupportail.catappsrvs.model.Versionned.Version.*;
 
 @Slf4j @Getter(AccessLevel.NONE) // lombok
-@Path("application") // jaxrs
+@Path("applications") // jaxrs
 @Component // spring
 @SuppressWarnings("SpringJavaAutowiringInspection") // intellij
-public final class ApplicationResource extends CrudResource<Application, JsApp> {
-    private ApplicationResource(ICrud<Application> srv) {
+public final class ApplicationResource extends CrudResource<Application, IApplication, JsApp> {
+    private ApplicationResource(IApplication srv) {
         super(srv);
     }
 

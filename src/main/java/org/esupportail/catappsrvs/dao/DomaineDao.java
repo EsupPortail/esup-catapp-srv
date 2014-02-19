@@ -2,6 +2,7 @@ package org.esupportail.catappsrvs.dao;
 
 import com.mysema.query.jpa.JPASubQuery;
 import com.mysema.query.jpa.impl.JPAQuery;
+import com.mysema.query.types.path.PathBuilder;
 import fj.*;
 import fj.data.*;
 import org.esupportail.catappsrvs.model.*;
@@ -175,7 +176,9 @@ public final class DomaineDao extends CrudDao<Domaine> implements IDomaineDao {
                                                     iterableList(lastAppsQuery(dom)
                                                             .where(otherApp.groupe.in(groups.toCollection()))
                                                             .list(otherApp));
-                                            return right(dom.withApplications(apps));
+                                            final List<Domaine> doms =
+                                                    iterableList(lastDomsQuery(dom).list(otherDom));
+                                            return right(dom.withDomaines(doms).withApplications(apps));
                                         } catch (Exception e) {
                                             return left(e);
                                         }
@@ -213,15 +216,19 @@ public final class DomaineDao extends CrudDao<Domaine> implements IDomaineDao {
     }
 
     private JPAQuery lastAppsQuery(Domaine domaine) {
+        final PathBuilder<Application> otherAppPath = new PathBuilder<>(Application.class, otherApp.getMetadata());
+
         return new JPAQuery(entityManager)
                 .from(otherApp).where(otherApp.version.eq(new JPASubQuery()
-                        .from(app).where(app.code.eq(otherApp.code)).unique(lastVersion(Application.class)))
+                        .from(app).where(app.code.eq(otherApp.code)).unique(lastVersion(otherAppPath)))
                         .and(otherApp.domaines.contains(domaine)));
     }
 
     private JPAQuery lastDomsQuery(Domaine domaine) {
+        final PathBuilder<Domaine> otherDomPath = new PathBuilder<>(Domaine.class, otherDom.getMetadata());
+
         return from(otherDom).where(otherDom.version.eq(new JPASubQuery()
-                .from(dom).where(dom.code.eq(otherDom.code)).unique(lastVersion(Domaine.class)))
+                .from(dom).where(dom.code.eq(otherDom.code)).unique(lastVersion(otherDomPath)))
                 .and(otherDom.parent.eq(domaine)));
     }
 

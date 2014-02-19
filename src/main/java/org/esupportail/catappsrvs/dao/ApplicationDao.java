@@ -2,6 +2,7 @@ package org.esupportail.catappsrvs.dao;
 
 import com.mysema.query.jpa.JPASubQuery;
 import com.mysema.query.jpa.impl.JPAQuery;
+import com.mysema.query.types.path.PathBuilder;
 import fj.Equal;
 import fj.F;
 import fj.P1;
@@ -98,9 +99,11 @@ public final class ApplicationDao extends CrudDao<Application> implements IAppli
 
     @Override
     protected Either<Exception, Application> refine(Application application) {
+        final PathBuilder<Domaine> otherDomPath = new PathBuilder<>(Domaine.class, otherDom.getMetadata());
+
         final java.util.List<Domaine> domaines = new JPAQuery(entityManager)
                 .from(otherDom).where(otherDom.version.eq(new JPASubQuery()
-                        .from(dom).where(dom.code.eq(otherDom.code)).unique(lastVersion(Domaine.class)))
+                        .from(dom).where(dom.code.eq(otherDom.code)).unique(lastVersion(otherDomPath)))
                         .and(otherDom.applications.contains(application)))
                 .list(otherDom);
 

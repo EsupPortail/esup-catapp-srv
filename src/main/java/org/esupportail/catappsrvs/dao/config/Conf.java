@@ -25,7 +25,6 @@ import java.util.Properties;
 @Configuration
 @EnableTransactionManagement
 class Conf {
-
     private final String[] ENTITIES_PACKAGES = new String[] { "org.esupportail.catappsrvs.model" };
 
     @Value("${jpa.database.type}")
@@ -52,7 +51,7 @@ class Conf {
 
     @Bean
     public PlatformTransactionManager transactionManager() {
-        JpaTransactionManager transactionManager = new JpaTransactionManager();
+        final JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(entityManagerFactory());
         return transactionManager;
     }
@@ -72,7 +71,6 @@ class Conf {
     public HibernateExceptionTranslator hibernateExceptionTranslator() {
         return new HibernateExceptionTranslator();
     }
-
 
     private Properties jpaProperties() {
         final Properties props = new Properties();
@@ -121,7 +119,7 @@ class Conf {
         @Value("${jdbc.connection.password}")
         private String databasePassword;
 
-        @Bean(name="JDBCDataSource", destroyMethod="close")
+        @Bean(name="JDBCDataSource")
         public DataSource jdbcDataSource() {
             BasicDataSource dataSource = new BasicDataSource();
             dataSource.setDriverClassName(databaseDriverClass);

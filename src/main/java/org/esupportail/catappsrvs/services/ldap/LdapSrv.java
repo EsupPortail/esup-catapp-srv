@@ -6,17 +6,13 @@ import fj.P1;
 import fj.data.Either;
 import fj.data.List;
 import lombok.Value;
-import org.esupportail.catappsrvs.model.CommonTypes;
 import org.esupportail.catappsrvs.model.User;
 
 import static fj.data.Either.iif;
 import static fj.data.Either.left;
-import static fj.data.Either.right;
 import static fj.data.List.iterableList;
-import static fj.data.Option.fromNull;
 import static org.esupportail.catappsrvs.model.CommonTypes.LdapGroup;
-import static org.esupportail.catappsrvs.model.CommonTypes.LdapGroup.ldapGroup;
-import static org.esupportail.catappsrvs.model.User.Uid;
+import static org.esupportail.catappsrvs.model.CommonTypes.LdapGroup.*;
 
 @Value(staticConstructor = "ldapSrv")
 public class LdapSrv implements ILdap {

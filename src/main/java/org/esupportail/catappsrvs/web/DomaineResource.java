@@ -1,52 +1,91 @@
 package org.esupportail.catappsrvs.web;
 
-import fj.F2;
-import fj.F6;
+import fj.*;
 import fj.data.List;
+import fj.data.NonEmptyList;
+import fj.data.Tree;
 import fj.data.Validation;
-import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.esupportail.catappsrvs.model.Application;
 import org.esupportail.catappsrvs.model.Domaine;
-import org.esupportail.catappsrvs.services.ICrud;
 import org.esupportail.catappsrvs.services.IDomaine;
+import org.esupportail.catappsrvs.web.dto.JSDomTree;
 import org.esupportail.catappsrvs.web.dto.JsDom;
-import org.esupportail.catappsrvs.web.utils.Functions;
+import org.esupportail.catappsrvs.web.dto.Validations;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.Path;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 
 import static fj.Function.curry;
-import static fj.data.Option.fromNull;
 import static fj.data.Option.fromString;
 import static fj.data.Validation.fail;
 import static fj.data.Validation.success;
+import static fj.data.Validation.validation;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.ResponseBuilder;
 import static org.esupportail.catappsrvs.model.CommonTypes.Code.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Libelle.*;
 import static org.esupportail.catappsrvs.model.Domaine.*;
+import static org.esupportail.catappsrvs.model.User.Uid.*;
+import static org.esupportail.catappsrvs.model.User.*;
 import static org.esupportail.catappsrvs.model.Versionned.Version.*;
 import static org.esupportail.catappsrvs.web.dto.Conversions.*;
+import static org.esupportail.catappsrvs.web.dto.JSDomTree.*;
 import static org.esupportail.catappsrvs.web.dto.Validations.*;
-import static org.esupportail.catappsrvs.web.utils.Functions.arrayToList;
+import static org.esupportail.catappsrvs.web.utils.Functions.*;
 
-@Slf4j @Getter(AccessLevel.NONE) // lombok
-@Path("domain") // jaxrs
+@Slf4j // lombok
+@Path("domains") // jaxrs
 @Component // spring
 @SuppressWarnings("SpringJavaAutowiringInspection") // intellij
-public final class DomaineResource extends CrudResource<Domaine, JsDom> {
-    private DomaineResource(ICrud<Domaine> srv) {
+public final class DomaineResource extends CrudResource<Domaine, IDomaine, JsDom> {
+    private DomaineResource(IDomaine srv) {
         super(srv);
     }
 
     public static DomaineResource domaineResource(IDomaine srv) {
         return new DomaineResource(srv);
     }
+
+    @GET
+    @Path("{code}/tree")
+    @Produces(APPLICATION_JSON)
+    public final Response findDomaines(@PathParam("code") String code,
+                                       @QueryParam("user") String uid) {
+        return validCode(code).nel()
+                .accumulate(
+                        Validations.sm,
+                        Validations.validNotEmpty("le paramètre user", uid).nel(),
+                        P.<String, String>p2())
+                .f().map(fieldsException).nel()
+                .bind(new F<P2<String, String>, Validation<NonEmptyList<Exception>, Response>>() {
+                    public Validation<NonEmptyList<Exception>, Response> f(P2<String, String> pair) {
+                        return validation(srv.findDomaines(user(uid(pair._2())))).nel()
+                                .map(new F<Tree<Domaine>, Response>() {
+                                    public Response f(Tree<Domaine> domaines) {
+                                        final Tree<JsDom> doms = domaines.fmap(domaineToDTO);
+                                        final JSDomTree domTree =
+                                                doms.foldMap(
+                                                        new F<JsDom, JSDomTree>() {
+                                                            public JSDomTree f(JsDom jsDom) {
+                                                                return jsDomTree(jsDom, new JSDomTree[0]);
+                                                            }
+                                                        },
+                                                        jsDomTreeMonoid);
+                                        return Response.ok(domTree).build();
+                                    }
+                                });
+                    }
+                })
+                .validation(
+                        treatErrors("Erreur de lecture d'un arbre d'entités"),
+                        Function.<Response>identity());
+    }
+
 
     @Override
     protected Validation<Exception, Response> createResp(Domaine domaine, UriInfo uriInfo) {
@@ -101,11 +140,11 @@ public final class DomaineResource extends CrudResource<Domaine, JsDom> {
         return validApplications(domaine.applications()).map(arrayToList).nel()
                 .accumapply(sm, validDomaines(domaine.domaines()).map(arrayToList).nel()
                         .accumapply(sm, validParent(domaine.parent()).nel()
-                                .accumapply(sm, validLibelle(domaine.libelle()).nel()
+                                .accumapply(sm, validLibelle(domaine.wording()).nel()
                                         .accumapply(sm, validCode(domaine.code()).nel()
                                                 .accumapply(sm, Validation.<String, Integer>success(-1).nel()
                                                         .map(curry(buildDomain)))))))
-                .f().map(Functions.fieldsException);
+                .f().map(fieldsException);
     }
 
     private final F6<Integer, String, String, String, List<String>, List<String>, Domaine> buildDomain =

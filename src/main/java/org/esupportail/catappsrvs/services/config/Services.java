@@ -23,38 +23,43 @@ import javax.inject.Inject;
 public class Services {
 
     @Bean @Inject
-    public IDomaine domaineSrv(IDomaineDao domaineDao, PlatformTransactionManager txManager) {
-        return DomaineSrv.domaineSrv(domaineDao, txManager);
+    public IDomaine domaineSrv(IDomaineDao domaineDao,
+                               PlatformTransactionManager txManager,
+                               ILdap ldap) {
+        return DomaineSrv.domaineSrv(domaineDao, txManager, ldap);
     }
 
     @Bean @Inject
-    public IApplication applicationSrv(IApplicationDao applicationDao, PlatformTransactionManager txManager) {
+    public IApplication applicationSrv(IApplicationDao applicationDao,
+                                       PlatformTransactionManager txManager) {
         return ApplicationSrv.applicationSrv(applicationDao, txManager);
-    }
-
-    @Bean @Inject
-    public ILdap ldapSrv(LDAPInterface ldap) {
-        return LdapSrv.ldapSrv(ldap);
     }
 
     @Configuration
     static class LdapConf {
-        @Value("${ldap.toip.servername}")
-        private String servername;
+        @Value("${ldap.server}")
+        private String server;
 
-        @Value("${ldap.toip.port}")
+        @Value("${ldap.port}")
         private Integer port;
 
-        @Value("${ldap.toip.username}")
+        @Value("${ldap.username}")
         private String username;
 
-        @Value("${ldap.toip.password}")
+        @Value("${ldap.password}")
         private String password;
 
+        @Value("${ldap.baseDn}")
+        private String baseDn;
+
         @Bean
-        public LDAPInterface ldap() {
+        public ILdap ldapSrv() {
+            return LdapSrv.ldapSrv(baseDn, ldap());
+        }
+
+        private LDAPInterface ldap() {
             return new LDAPThreadLocalConnectionPool(
-                    new SingleServerSet(servername, port),
+                    new SingleServerSet(server, port),
                     new SimpleBindRequest(username, password));
         }
     }

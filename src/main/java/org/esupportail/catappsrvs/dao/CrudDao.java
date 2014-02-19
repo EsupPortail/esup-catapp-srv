@@ -38,12 +38,13 @@ abstract class CrudDao<T extends Versionned<T> & HasCode<T>> implements ICrudDao
 
     protected final EntityManager entityManager;
     protected final PathBuilderFactory pathBuilderFactory = new PathBuilderFactory();
+    private final PathBuilder<T> tPath;
 
     protected CrudDao(EntityManager entityManager, EntityPath<T> ent, Class<T> clazz) {
         this.entityManager = entityManager;
         this.ent = ent;
         this.clazz = clazz;
-        final PathBuilder<T> tPath = pathBuilderFactory.create(clazz);
+        tPath = pathBuilderFactory.create(clazz);
         codePath = tPath.get("code", Code.class);
         versionPath = tPath.get("version", Version.class);
     }
@@ -80,7 +81,7 @@ abstract class CrudDao<T extends Versionned<T> & HasCode<T>> implements ICrudDao
                         return Expressions.constant(version);
                     }
                 })
-                .orSome(new JPASubQuery().from(ent).where(codePath.eq(code)).unique(lastVersion(clazz)));
+                .orSome(new JPASubQuery().from(ent).where(codePath.eq(code)).unique(lastVersion(tPath)));
         try {
             final JPAQuery query =
                     from(ent).where(codePath.eq(code).and(versionPath.eq(realVersion)));
@@ -103,13 +104,13 @@ abstract class CrudDao<T extends Versionned<T> & HasCode<T>> implements ICrudDao
 
     @Override
     public Either<Exception, List<T>> list() {
-        final PathBuilder<T> subPath = pathBuilderFactory.create(clazz);
-        final PathBuilder<Code> subCodePath = subPath.get("code", Code.class);
+        final PathBuilder<T> otherEnt = new PathBuilder<>(clazz, "otherEnt");
+        final PathBuilder<Code> otherCode = otherEnt.get("code", Code.class);
         try {
             return Either.<Exception, List<T>>right(
                     iterableList(from(ent)
                             .where(versionPath.eq(new JPASubQuery()
-                                    .from(ent).where(codePath.eq(subCodePath)).unique(lastVersion(clazz))))
+                                    .from(otherEnt).where(codePath.eq(otherCode)).unique(lastVersion(otherEnt))))
                             .list(ent)))
                     .right()
                     .bind(new F<List<T>, Either<Exception, List<T>>>() {
@@ -162,13 +163,13 @@ abstract class CrudDao<T extends Versionned<T> & HasCode<T>> implements ICrudDao
         return new JPAQuery(entityManager).from(path);
     }
 
-    protected final <U> Expression<Version> lastVersion(Class<U> clazz) {
-        return max(pathBuilderFactory.create(clazz).getSet("version", Version.class));
+    protected final <U> Expression<Version> lastVersion(PathBuilder<U> path) {
+        return max(path.getSet("version", Version.class));
     }
 
     protected final Either<Exception, Version> searchLastVersion(T t) {
         try {
-            return fromNull(from(ent).where(codePath.eq(t.code())).uniqueResult(lastVersion(clazz)))
+            return fromNull(from(ent).where(codePath.eq(t.code())).uniqueResult(lastVersion(tPath)))
                     .toEither(new P1<Exception>() {
                         public Exception _1() {
                             return new Exception("La dernière version de l'entité n'a pu être récupérée");

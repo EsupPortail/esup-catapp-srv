@@ -26,10 +26,10 @@ import static org.esupportail.catappsrvs.web.utils.Functions.fieldsException;
 import static org.esupportail.catappsrvs.web.utils.Functions.treatErrors;
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
-public abstract class CrudResource<T, D extends JsHasCode<T>> {
-    protected final ICrud<T> srv;
+public abstract class CrudResource<T, S extends ICrud<T>, D extends JsHasCode<T>> {
+    protected final S srv;
 
-    protected CrudResource(ICrud<T> srv) { this.srv = srv; }
+    protected CrudResource(S srv) { this.srv = srv; }
 
     private static final Ord<Link> linkOrd = Ord.stringOrd.comap(new F<Link, String>() {
         public String f(Link link) {
@@ -48,14 +48,14 @@ public abstract class CrudResource<T, D extends JsHasCode<T>> {
                                 .map(new F<Boolean, Response>() {
                                     public Response f(final Boolean bool) {
                                         return Response.ok(new Object() {
-                                            public boolean exists = bool;
+                                            public final boolean exists = bool;
                                         }).build();
                                     }
                                 });
                     }
                 })
                 .validation(
-                        treatErrors(""),
+                        treatErrors("Erreur de vérification d'existence d'une entité"),
                         Function.<Response>identity());
     }
 
@@ -133,6 +133,7 @@ public abstract class CrudResource<T, D extends JsHasCode<T>> {
                                                                 array((Object[]) tresp.getEntity())
                                                                         .append(single(oresp.getEntity()))
                                                                         .array(Object[].class);
+                                                        // null demandé par jersey...
                                                         return target.links(null).links(links).entity(entities);
                                                     }
                                                 },
@@ -144,7 +145,7 @@ public abstract class CrudResource<T, D extends JsHasCode<T>> {
                     }
                 })
                 .validation(
-                        treatErrors(""),
+                        treatErrors("Erreur de lecture d'une liste d'entités"),
                         Function.<Response>identity()
                 );
     }
