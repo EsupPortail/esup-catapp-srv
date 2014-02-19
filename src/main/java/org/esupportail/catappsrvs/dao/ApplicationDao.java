@@ -99,11 +99,11 @@ public final class ApplicationDao extends CrudDao<Application> implements IAppli
 
     @Override
     protected Either<Exception, Application> refine(Application application) {
-        final PathBuilder<Domaine> otherDomPath = new PathBuilder<>(Domaine.class, otherDom.getMetadata());
+        final PathBuilder<Domaine> domPath = new PathBuilder<>(Domaine.class, dom.getMetadata());
 
         final java.util.List<Domaine> domaines = new JPAQuery(entityManager)
                 .from(otherDom).where(otherDom.version.eq(new JPASubQuery()
-                        .from(dom).where(dom.code.eq(otherDom.code)).unique(lastVersion(otherDomPath)))
+                        .from(dom).where(dom.code.eq(otherDom.code)).unique(lastVersion(domPath)))
                         .and(otherDom.applications.contains(application)))
                 .list(otherDom);
 

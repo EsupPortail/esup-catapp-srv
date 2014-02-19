@@ -216,19 +216,19 @@ public final class DomaineDao extends CrudDao<Domaine> implements IDomaineDao {
     }
 
     private JPAQuery lastAppsQuery(Domaine domaine) {
-        final PathBuilder<Application> otherAppPath = new PathBuilder<>(Application.class, otherApp.getMetadata());
+        final PathBuilder<Application> appPath = new PathBuilder<>(Application.class, app.getMetadata());
 
         return new JPAQuery(entityManager)
                 .from(otherApp).where(otherApp.version.eq(new JPASubQuery()
-                        .from(app).where(app.code.eq(otherApp.code)).unique(lastVersion(otherAppPath)))
+                        .from(app).where(app.code.eq(otherApp.code)).unique(lastVersion(appPath)))
                         .and(otherApp.domaines.contains(domaine)));
     }
 
     private JPAQuery lastDomsQuery(Domaine domaine) {
-        final PathBuilder<Domaine> otherDomPath = new PathBuilder<>(Domaine.class, otherDom.getMetadata());
+        final PathBuilder<Domaine> domPath = new PathBuilder<>(Domaine.class, dom.getMetadata());
 
         return from(otherDom).where(otherDom.version.eq(new JPASubQuery()
-                .from(dom).where(dom.code.eq(otherDom.code)).unique(lastVersion(otherDomPath)))
+                .from(dom).where(dom.code.eq(otherDom.code)).unique(lastVersion(domPath)))
                 .and(otherDom.parent.eq(domaine)));
     }
 
