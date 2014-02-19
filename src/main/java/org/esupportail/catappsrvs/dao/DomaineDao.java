@@ -14,7 +14,7 @@ import static fj.P.p;
 import static fj.data.$._;
 import static fj.data.Either.left;
 import static fj.data.Either.right;
-import static fj.data.List.iterableList;
+import static fj.data.List.*;
 import static fj.data.Option.some;
 import static fj.data.Stream.iterableStream;
 import static org.esupportail.catappsrvs.model.CommonTypes.Code.*;
@@ -197,10 +197,19 @@ public final class DomaineDao extends CrudDao<Domaine> implements IDomaineDao {
                     }
                 });
 
-        final Either<Exception, Tree<Domaine>> appsFilteredTree =
-                sequenceRightTree(treeFunc.f(read(code("ROOT"), Option.<Version>none())));
+        final Tree<Either<Exception, Domaine>> tempTree = treeFunc.f(read(code("ROOT"), Option.<Version>none()));
 
-        return appsFilteredTree.right().map(new F<Tree<Domaine>, Tree<Domaine>>() {
+        System.out.println(tempTree.draw(Show.eitherShow(Show.<Exception>anyShow(), Show.<Domaine>anyShow())));
+
+        final Either<Exception, Tree<Domaine>> appsFilteredTree = sequenceRightTree(tempTree);
+
+        appsFilteredTree.right().foreach(new Effect<Tree<Domaine>>() {
+            public void e(Tree<Domaine> domaines) {
+                System.out.println(domaines.draw(Show.<Domaine>anyShow()));
+            }
+        });
+
+        final Either<Exception, Tree<Domaine>> resultTree = appsFilteredTree.right().map(new F<Tree<Domaine>, Tree<Domaine>>() {
             public Tree<Domaine> f(Tree<Domaine> tdoms) {
                 return Tree.bottomUp(tdoms, new F<P2<Domaine, Stream<Domaine>>, Domaine>() {
                     public Domaine f(P2<Domaine, Stream<Domaine>> pair) {
@@ -213,6 +222,14 @@ public final class DomaineDao extends CrudDao<Domaine> implements IDomaineDao {
                 });
             }
         });
+
+        resultTree.right().foreach(new Effect<Tree<Domaine>>() {
+            public void e(Tree<Domaine> domaines) {
+                System.out.println(domaines.draw(Show.<Domaine>anyShow()));
+            }
+        });
+
+        return resultTree;
     }
 
     private JPAQuery lastAppsQuery(Domaine domaine) {
@@ -240,9 +257,23 @@ public final class DomaineDao extends CrudDao<Domaine> implements IDomaineDao {
                         return Tree.leaf(b);
                     }
                 }) :
-                subForest.head().root().right().bind(new F<B, Either<X, Tree<B>>>() {
-                    public Either<X, Tree<B>> f(B b) {
-                        return sequenceRightTree(Tree.node(Either.<X, B>right(b), subForest.tail()));
+                tree.root().right().bind(new F<B, Either<X, Tree<B>>>() {
+                    public Either<X, Tree<B>> f(final B b) {
+                        return subForest.foldLeft(
+                                new F2<Either<X, Tree<B>>, Tree<Either<X, B>>, Either<X, Tree<B>>>() {
+                                    public Either<X, Tree<B>> f(Either<X, Tree<B>> ei, final Tree<Either<X, B>> t) {
+                                        return ei.right().bind(new F<Tree<B>, Either<X, Tree<B>>>() {
+                                            public Either<X, Tree<B>> f(final Tree<B> bs1) {
+                                                return sequenceRightTree(t).right().map(new F<Tree<B>, Tree<B>>() {
+                                                    public Tree<B> f(Tree<B> bs2) {
+                                                        return Tree.node(bs1.root(), bs1.subForest()._1().snoc(bs2));
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+                                },
+                                Either.<X, Tree<B>>right(Tree.node(b, Stream.<Tree<B>>nil())));
                     }
                 });
     }

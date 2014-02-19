@@ -19,7 +19,7 @@ import static org.esupportail.catappsrvs.model.CommonTypes.Code;
 import static org.esupportail.catappsrvs.model.CommonTypes.Libelle;
 
 @EqualsAndHashCode(of = {"code", "version"}, doNotUseGetters = true)
-@ToString @FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity @Immutable
 public final class Domaine implements Versionned<Domaine>, HasCode<Domaine> {
     @Id @Column(name = "pk", nullable = false)
@@ -40,7 +40,7 @@ public final class Domaine implements Versionned<Domaine>, HasCode<Domaine> {
     @ManyToOne(optional = true)
     final Domaine parent;
 
-    @OneToMany(mappedBy = "parent")
+    @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER)
     final java.util.List<Domaine> domaines;
 
     @ManyToMany
@@ -118,4 +118,12 @@ public final class Domaine implements Versionned<Domaine>, HasCode<Domaine> {
     public List<Domaine> domaines() { return iterableList(domaines); }
 
     public List<Application> applications() { return iterableList(applications); }
+
+    @Override
+    public String toString() {
+        return "Domaine{" +
+                "code=" + code +
+                ", libelle=" + libelle +
+                '}';
+    }
 }
