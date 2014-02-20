@@ -18,7 +18,9 @@ import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 
 import static fj.Function.curry;
-import static fj.data.Option.fromString;
+import static fj.data.Array.array;
+import static fj.data.Array.single;
+import static fj.data.Option.*;
 import static fj.data.Validation.*;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.ResponseBuilder;
@@ -29,7 +31,6 @@ import static org.esupportail.catappsrvs.model.User.Uid.*;
 import static org.esupportail.catappsrvs.model.User.*;
 import static org.esupportail.catappsrvs.model.Versionned.Version.*;
 import static org.esupportail.catappsrvs.web.dto.Conversions.*;
-import static org.esupportail.catappsrvs.web.dto.JSDomTree.*;
 import static org.esupportail.catappsrvs.web.dto.Validations.*;
 import static org.esupportail.catappsrvs.web.utils.Functions.*;
 
@@ -63,19 +64,63 @@ public final class DomaineResource extends CrudResource<Domaine, IDomaine, JsDom
                                 .map(new F<Tree<Option<Domaine>>, Response>() {
                                     public Response f(Tree<Option<Domaine>> domaines) {
                                         final Tree<Option<JsDom>> doms = domaines.fmap(domaineToDTO.mapOption());
-                                        final Option<JSDomTree> domTree =
-                                                doms.foldMap(
-                                                        new F<Option<JsDom>, Option<JSDomTree>>() {
-                                                            public Option<JSDomTree> f(Option<JsDom> opt) {
-                                                                return opt.map(new F<JsDom, JSDomTree>() {
-                                                                    public JSDomTree f(JsDom jsDom) {
-                                                                        return jsDomTree(jsDom, new JSDomTree[0]);
+                                        final Tree<Option<JSDomTree>> domTree =
+                                                doms.fmap(new F<Option<JsDom>, Option<JSDomTree>>() {
+                                                    public Option<JSDomTree> f(Option<JsDom> opt) {
+                                                        return opt.map(new F<JsDom, JSDomTree>() {
+                                                            public JSDomTree f(JsDom jsDom) {
+                                                                return JSDomTree.jsDomTree(jsDom, new JSDomTree[0]);
+                                                            }
+                                                        });
+                                                    }
+                                                });
+                                        final Stream<Stream<Option<JSDomTree>>> levels = domTree.levels();
+
+                                        final Stream<Stream<Option<JSDomTree>>> trees = levels.length() == 1
+                                                ? Stream.single(Stream.single(domTree.root()))
+                                                : levels.zipWith(levels.tail()._1(), new F2<Stream<Option<JSDomTree>>, Stream<Option<JSDomTree>>, Stream<Option<JSDomTree>>>() {
+                                                    public Stream<Option<JSDomTree>> f(Stream<Option<JSDomTree>> level1, final Stream<Option<JSDomTree>> level2) {
+                                                        return level1.map(new F<Option<JSDomTree>, Option<JSDomTree>>() {
+                                                            public Option<JSDomTree> f(final Option<JSDomTree> opt) {
+                                                                final JSDomTree[] subDomains =
+                                                                        somes(level2)
+                                                                                .filter(new F<JSDomTree, Boolean>() {
+                                                                                    public Boolean f(final JSDomTree child) {
+                                                                                        return opt.exists(new F<JSDomTree, Boolean>() {
+                                                                                            public Boolean f(JSDomTree parent) {
+                                                                                                return parent.domain().code()
+                                                                                                        .equals(child.domain().parent());
+                                                                                            }
+                                                                                        });
+                                                                                    }
+                                                                                })
+                                                                                .array(JSDomTree[].class);
+                                                                return opt.map(new F<JSDomTree, JSDomTree>() {
+                                                                    public JSDomTree f(JSDomTree jsDomTree) {
+                                                                        return jsDomTree.withSubDomains(subDomains);
+                                                                    }
+                                                                });
+                                                            }
+                                                        });
+                                                    }
+                                                });
+
+                                        final Option<JSDomTree> result =
+                                                trees.foldLeft(
+                                                        new F2<Option<JSDomTree>, Stream<Option<JSDomTree>>, Option<JSDomTree>>() {
+                                                            public Option<JSDomTree> f(Option<JSDomTree> acc, final Stream<Option<JSDomTree>> level) {
+                                                                return acc.bind(new F<JSDomTree, Option<JSDomTree>>() {
+                                                                    public Option<JSDomTree> f(JSDomTree jsDomTree) {
+                                                                        return jsDomTree.equals(emptyJsDomTree)
+                                                                                ? level.head()
+                                                                                : some(jsDomTree.withSubDomains(somes(level).array(JSDomTree[].class)));
                                                                     }
                                                                 });
                                                             }
                                                         },
-                                                        jsDomTreeMonoid);
-                                        return Response.ok(domTree.orSome(emptyJsDomTree)).build();
+                                                        some(emptyJsDomTree));
+
+                                        return Response.ok(result.orSome(emptyJsDomTree)).build();
                                     }
                                 });
                     }
