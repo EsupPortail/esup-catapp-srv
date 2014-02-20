@@ -135,12 +135,12 @@ class Conf {
         }
     }
 
-    @Bean
+    @Bean @Profile("!TEST")
     public SpringLiquibase liquibase() throws LiquibaseException {
         final SpringLiquibase liquibase = new SpringLiquibase();
         liquibase.setDataSource(dataSource);
         liquibase.setChangeLog
-                ("classpath:properties/db/changelogs/master.changelog.xml");
+                ("classpath:/db/changelogs/master.changelog.xml");
         return liquibase;
     }
 }

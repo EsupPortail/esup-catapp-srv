@@ -1,0 +1,39 @@
+= esup-catapp-srv =
+
+
+
+
+
+== Prérequis ==
+* JRE 1.7
+* Tomcat 1.7
+* Base de données SQL à configurer dans config.properties
+* Annuaire ldap à configurer dans config.properties
+
+== Récupération de l'archive de l'application ==
+
+
+== Adapter le fichier config.properties ==
+Ce fichier doit être passé en paramètre du serveur d'applications grâce à la variable -Dconfig.location.
+Il doit contenir les paramètres décrits ci-après :
+
+[width="80%",options="header"]
+|====
+| Paramètre| Description| Version| Exemple
+
+| jpa.database.type| type de base de donnée| 0.1.0| MYSQL
+| datasource.bean| choix du type de connexion à la BDD (JDBC ou JNDI)| 0.1.0| JDBC
+| jdbc.connexion.driver_class| classe java du driver de connexion| 0.1.0| com.mysql.jdbc.Driver
+| jdbc.connexion.url| url de connexion à la BDD| 0.1.0| jdbc:mysql://localhost:3306/catapp
+| jdbc.connexion.username| identifiant de connexion à la BDD| 0.1.0| toto
+| jdbc.connection.password| mot de passe de connexion à la BDD| 0.1.0| titi
+| hibernate.show_sql (optionnel)| montrer les requêtes à la BDD dans les logs| 0.1.0| false
+| hibernate.format_sql (optionnel)| formattage du SQL dans les logs| 0.1.0| false
+| hibernate.use_sql_comments (optionnel)| utiliser des commentaires SQL dans les logs| 0.1.0| false
+| | | | 
+| ldap.server| url du serveur ldap| 0.1.0| monldap.monuniv.fr
+| ldap.port| port de connexion au ldap| 0.1.0| 389
+| ldap.username| identifiant de connexion au ldap| 0.1.0| tata
+| ldap.password| mot de passe de connexion au ldap| 0.1.0| tutu
+| ldap.baseDn| dn de base de connexion au ldap| 0.1.0| ou=gens,dc=monuniv,dc=fr
+|====
