@@ -239,6 +239,11 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>org.liquibase</groupId>
+                <artifactId>liquibase-core</artifactId>
+                <version>3.1.1</version>
+            </dependency>
+            <dependency>
                 <groupId>org.codehaus.enunciate</groupId>
                 <artifactId>enunciate-core-annotations</artifactId>
                 <version>1.26.2</version>
@@ -366,6 +371,10 @@
         <dependency>
             <groupId>org.codehaus.enunciate</groupId>
             <artifactId>enunciate-core-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.dbunit</groupId>

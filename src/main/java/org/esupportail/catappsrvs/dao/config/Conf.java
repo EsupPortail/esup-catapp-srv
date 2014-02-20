@@ -1,5 +1,7 @@
 package org.esupportail.catappsrvs.dao.config;
 
+import liquibase.exception.LiquibaseException;
+import liquibase.integration.spring.SpringLiquibase;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -131,5 +133,14 @@ class Conf {
             dataSource.setMaxWait(100);
             return dataSource;
         }
+    }
+
+    @Bean
+    public SpringLiquibase liquibase() throws LiquibaseException {
+        final SpringLiquibase liquibase = new SpringLiquibase();
+        liquibase.setDataSource(dataSource);
+        liquibase.setChangeLog
+                ("classpath:properties/db/changelogs/master.changelog.xml");
+        return liquibase;
     }
 }

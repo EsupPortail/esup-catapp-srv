@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet author="GENERATED" id="1392822241469-1">
+        <createTable tableName="Application">
+            <column autoIncrement="true" name="pk" type="BIGINT(19)">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="accessibilite" type="VARCHAR(255)"/>
+            <column name="code" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="groupe" type="VARCHAR(255)"/>
+            <column name="libelle" type="VARCHAR(255)"/>
+            <column name="titre" type="VARCHAR(255)"/>
+            <column name="url" type="LONGTEXT"/>
+            <column name="version" type="INT(10)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="GENERATED" id="1392822241469-2">
+        <createTable tableName="DOMAINE_APPLICATION">
+            <column name="domaine_pk" type="BIGINT(19)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="application_pk" type="BIGINT(19)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="GENERATED" id="1392822241469-3">
+        <createTable tableName="Domaine">
+            <column autoIncrement="true" name="pk" type="BIGINT(19)">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="code" type="VARCHAR(255)"/>
+            <column name="libelle" type="VARCHAR(255)"/>
+            <column name="version" type="INT(10)"/>
+            <column name="parent_pk" type="BIGINT(19)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="GENERATED" id="1392822241469-4">
+        <addForeignKeyConstraint baseColumnNames="domaine_pk" baseTableName="DOMAINE_APPLICATION" constraintName="FK_988knloafmhbajqjfbvpwohmq" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="pk" referencedTableName="Domaine"/>
+    </changeSet>
+    <changeSet author="GENERATED" id="1392822241469-5">
+        <addForeignKeyConstraint baseColumnNames="parent_pk" baseTableName="Domaine" constraintName="FK_deeet6h2ktw7ehx75m11donn0" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="pk" referencedTableName="Domaine"/>
+    </changeSet>
+    <changeSet author="GENERATED" id="1392822241469-6">
+        <addForeignKeyConstraint baseColumnNames="application_pk" baseTableName="DOMAINE_APPLICATION" constraintName="FK_r8fjw4b5y4x18oxnm0c04xiha" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="pk" referencedTableName="Application"/>
+    </changeSet>
+    <changeSet author="GENERATED" id="1392822241469-7">
+        <addUniqueConstraint columnNames="code, version" constraintName="UK_30ct4nkubs0bkhdg6io7bwirn" deferrable="false" disabled="false" initiallyDeferred="false" tableName="Application"/>
+    </changeSet>
+    <changeSet author="GENERATED" id="1392822241469-8">
+        <addUniqueConstraint columnNames="code, version" constraintName="UK_6v2p9cedgvca14uh7i2jgucqo" deferrable="false" disabled="false" initiallyDeferred="false" tableName="Domaine"/>
+    </changeSet>
+</databaseChangeLog>
