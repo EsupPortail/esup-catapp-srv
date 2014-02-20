@@ -1,9 +1,6 @@
 package org.esupportail.catappsrvs.web.dto;
 
-import fj.F;
-import fj.F2;
-import fj.Monoid;
-import fj.Semigroup;
+import fj.*;
 import fj.data.List;
 import fj.data.Option;
 import lombok.AccessLevel;
@@ -13,7 +10,7 @@ import org.esupportail.catappsrvs.model.Domaine;
 
 import static fj.data.Array.array;
 import static fj.data.Array.single;
-import static org.esupportail.catappsrvs.model.Application.Accessibilite.*;
+import static org.esupportail.catappsrvs.model.Application.Accessibilite.Accessible;
 import static org.esupportail.catappsrvs.model.CommonTypes.Code.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Description.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.LdapGroup.*;
@@ -106,14 +103,34 @@ public final class Conversions {
     public static final JSDomTree emptyJsDomTree =
                 JSDomTree.jsDomTree(domaineToDTO(emptyDom), new JSDomTree[0]);
 
-    public static final Semigroup<JSDomTree> jsDomTreeSemigroup =
-            Semigroup.semigroup(new F2<JSDomTree, JSDomTree, JSDomTree>() {
-                public JSDomTree f(JSDomTree jst1, JSDomTree jst2) {
-                    return jst1.withSubDomains(array(jst1.subDomains())
-                            .append(single(jst2)).array(JSDomTree[].class));
+//    public static final Semigroup<JSDomTree> jsDomTreeSemigroup =
+//            Semigroup.semigroup(new F2<JSDomTree, JSDomTree, JSDomTree>() {
+//                public JSDomTree f(JSDomTree jst1, JSDomTree jst2) {
+//                    return jst1.domain().parent().equals("") && !jst1.equals(emptyJsDomTree)// racine
+//                            ? jst1.withSubDomains(array(jst1.subDomains()).append(array(jst2.subDomains())).array(JSDomTree[].class))
+//                            : !jst1.domain().parent().equals("") && jst1.domain().parent().equals(jst2.domain().parent()) // même niveau
+//                            ? emptyJsDomTree.withSubDomains(new JSDomTree[]{jst1, jst2})
+//                            : jst2.equals(emptyJsDomTree) // on ignore les arbres vides
+//                            ? emptyJsDomTree.withSubDomains(new JSDomTree[]{jst1})
+//                            : emptyJsDomTree.withSubDomains(new JSDomTree[]{jst1.withSubDomains(array(jst1.subDomains()).append(array(jst2.subDomains())).array(JSDomTree[].class))}); // cas 'normal'
+//                }
+//            });
+
+    public static final Semigroup<Option<JSDomTree>> jsDomTreeSemigroup =
+            Semigroup.semigroup(new F2<Option<JSDomTree>, Option<JSDomTree>, Option<JSDomTree>>() {
+                public Option<JSDomTree> f(Option<JSDomTree> jst1, Option<JSDomTree> jst2) {
+                    return jst2.isNone()
+                            ? jst1
+                            : jst1.isNone()
+                            ? jst2
+                            : jst2.apply(jst1.map(Function.curry(new F2<JSDomTree, JSDomTree, JSDomTree>() {
+                        public JSDomTree f(JSDomTree jst1, JSDomTree jst2) {
+                            return jst1.withSubDomains(array(jst1.subDomains()).append(single(jst2)).array(JSDomTree[].class));
+                        }
+                    })));
                 }
             });
 
-    public static final Monoid<JSDomTree> jsDomTreeMonoid =
-            Monoid.monoid(jsDomTreeSemigroup, emptyJsDomTree);
+    public static final Monoid<Option<JSDomTree>> jsDomTreeMonoid =
+            Monoid.monoid(jsDomTreeSemigroup, Option.<JSDomTree>none());
 }

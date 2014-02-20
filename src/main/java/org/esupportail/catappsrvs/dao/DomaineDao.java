@@ -5,7 +5,10 @@ import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.path.PathBuilder;
 import fj.*;
 import fj.data.*;
-import org.esupportail.catappsrvs.model.*;
+import org.esupportail.catappsrvs.model.Application;
+import org.esupportail.catappsrvs.model.Domaine;
+import org.esupportail.catappsrvs.model.QApplication;
+import org.esupportail.catappsrvs.model.QDomaine;
 
 import javax.persistence.EntityManager;
 
@@ -14,10 +17,10 @@ import static fj.P.p;
 import static fj.data.$._;
 import static fj.data.Either.left;
 import static fj.data.Either.right;
-import static fj.data.List.*;
+import static fj.data.List.iterableList;
 import static fj.data.Option.some;
 import static fj.data.Stream.iterableStream;
-import static org.esupportail.catappsrvs.model.CommonTypes.Code.*;
+import static org.esupportail.catappsrvs.model.CommonTypes.Code;
 import static org.esupportail.catappsrvs.model.CommonTypes.LdapGroup;
 import static org.esupportail.catappsrvs.model.Versionned.Version;
 
@@ -162,7 +165,7 @@ public final class DomaineDao extends CrudDao<Domaine> implements IDomaineDao {
     }
 
     @Override
-    public Either<Exception, Tree<Domaine>> findDomaines(final List<LdapGroup> groups) {
+    public Either<Exception, Tree<Option<Domaine>>> findDomaines(Code code, final List<LdapGroup> groups) {
         final F<Either<Exception, Domaine>, Tree<Either<Exception, Domaine>>> treeFunc =
                 Tree.unfoldTree(new F<Either<Exception, Domaine>,
                         P2<Either<Exception, Domaine>, P1<Stream<Either<Exception, Domaine>>>>>() {
@@ -197,35 +200,32 @@ public final class DomaineDao extends CrudDao<Domaine> implements IDomaineDao {
                     }
                 });
 
-        final Tree<Either<Exception, Domaine>> tempTree = treeFunc.f(read(code("ROOT"), Option.<Version>none()));
+        final Either<Exception, Tree<Domaine>> appsFilteredTree =
+                sequenceRightTree(treeFunc.f(read(code, Option.<Version>none())));
 
-        System.out.println(tempTree.draw(Show.eitherShow(Show.<Exception>anyShow(), Show.<Domaine>anyShow())));
+        final Either<Exception, Tree<Option<Domaine>>> resultTree = appsFilteredTree.right().map(new F<Tree<Domaine>, Tree<Option<Domaine>>>() {
+            public Tree<Option<Domaine>> f(Tree<Domaine> tdoms) {
+                return Tree.bottomUp(tdoms, new F<P2<Domaine, Stream<Option<Domaine>>>, Option<Domaine>>() {
+                    public Option<Domaine> f(P2<Domaine, Stream<Option<Domaine>>> pair) {
+                        final Domaine dom = pair._1();
+                        final Stream<Option<Domaine>> children = pair._2().filter(Option.<Domaine>isSome_());
 
-        final Either<Exception, Tree<Domaine>> appsFilteredTree = sequenceRightTree(tempTree);
-
-        appsFilteredTree.right().foreach(new Effect<Tree<Domaine>>() {
-            public void e(Tree<Domaine> domaines) {
-                System.out.println(domaines.draw(Show.<Domaine>anyShow()));
-            }
-        });
-
-        final Either<Exception, Tree<Domaine>> resultTree = appsFilteredTree.right().map(new F<Tree<Domaine>, Tree<Domaine>>() {
-            public Tree<Domaine> f(Tree<Domaine> tdoms) {
-                return Tree.bottomUp(tdoms, new F<P2<Domaine, Stream<Domaine>>, Domaine>() {
-                    public Domaine f(P2<Domaine, Stream<Domaine>> pair) {
-                        return pair._1().withDomaines(pair._2().filter(new F<Domaine, Boolean>() {
-                            public Boolean f(Domaine dom) {
-                                return dom.applications().isNotEmpty();
-                            }
-                        }).toList());
+                        return dom.applications().isEmpty() && children.isEmpty()
+                                ? Option.<Domaine>none()
+                                : some(
+                                dom.withDomaines(children.toList().map(new F<Option<Domaine>, Domaine>() {
+                                            public Domaine f(Option<Domaine> d) {
+                                                return d.some();
+                                            }
+                                        })));
                     }
                 });
             }
         });
 
-        resultTree.right().foreach(new Effect<Tree<Domaine>>() {
-            public void e(Tree<Domaine> domaines) {
-                System.out.println(domaines.draw(Show.<Domaine>anyShow()));
+        resultTree.right().foreach(new Effect<Tree<Option<Domaine>>>() {
+            public void e(Tree<Option<Domaine>> domaines) {
+                System.out.println(domaines.draw(Show.optionShow(Show.<Domaine>anyShow())));
             }
         });
 

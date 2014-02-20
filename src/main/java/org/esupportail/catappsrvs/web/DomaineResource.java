@@ -1,10 +1,7 @@
 package org.esupportail.catappsrvs.web;
 
 import fj.*;
-import fj.data.List;
-import fj.data.NonEmptyList;
-import fj.data.Tree;
-import fj.data.Validation;
+import fj.data.*;
 import lombok.extern.slf4j.Slf4j;
 import org.esupportail.catappsrvs.model.Application;
 import org.esupportail.catappsrvs.model.Domaine;
@@ -22,9 +19,7 @@ import java.net.URI;
 
 import static fj.Function.curry;
 import static fj.data.Option.fromString;
-import static fj.data.Validation.fail;
-import static fj.data.Validation.success;
-import static fj.data.Validation.validation;
+import static fj.data.Validation.*;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.ResponseBuilder;
 import static org.esupportail.catappsrvs.model.CommonTypes.Code.*;
@@ -64,19 +59,23 @@ public final class DomaineResource extends CrudResource<Domaine, IDomaine, JsDom
                 .f().map(fieldsException).nel()
                 .bind(new F<P2<String, String>, Validation<NonEmptyList<Exception>, Response>>() {
                     public Validation<NonEmptyList<Exception>, Response> f(P2<String, String> pair) {
-                        return validation(srv.findDomaines(user(uid(pair._2())))).nel()
-                                .map(new F<Tree<Domaine>, Response>() {
-                                    public Response f(Tree<Domaine> domaines) {
-                                        final Tree<JsDom> doms = domaines.fmap(domaineToDTO);
-                                        final JSDomTree domTree =
+                        return validation(srv.findDomaines(code(pair._1()), user(uid(pair._2())))).nel()
+                                .map(new F<Tree<Option<Domaine>>, Response>() {
+                                    public Response f(Tree<Option<Domaine>> domaines) {
+                                        final Tree<Option<JsDom>> doms = domaines.fmap(domaineToDTO.mapOption());
+                                        final Option<JSDomTree> domTree =
                                                 doms.foldMap(
-                                                        new F<JsDom, JSDomTree>() {
-                                                            public JSDomTree f(JsDom jsDom) {
-                                                                return jsDomTree(jsDom, new JSDomTree[0]);
+                                                        new F<Option<JsDom>, Option<JSDomTree>>() {
+                                                            public Option<JSDomTree> f(Option<JsDom> opt) {
+                                                                return opt.map(new F<JsDom, JSDomTree>() {
+                                                                    public JSDomTree f(JsDom jsDom) {
+                                                                        return jsDomTree(jsDom, new JSDomTree[0]);
+                                                                    }
+                                                                });
                                                             }
                                                         },
                                                         jsDomTreeMonoid);
-                                        return Response.ok(domTree).build();
+                                        return Response.ok(domTree.orSome(emptyJsDomTree)).build();
                                     }
                                 });
                     }
