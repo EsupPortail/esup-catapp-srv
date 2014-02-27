@@ -1,4 +1,4 @@
-package org.esupportail.catappsrvs.web.dto;
+package org.esupportail.catappsrvs.web.json;
 
 
 public interface JsHasCode<T> {

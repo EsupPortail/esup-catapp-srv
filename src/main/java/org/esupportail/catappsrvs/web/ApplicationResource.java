@@ -10,10 +10,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.esupportail.catappsrvs.model.Application;
-import org.esupportail.catappsrvs.model.Domaine;
+import org.esupportail.catappsrvs.model.Domain;
 import org.esupportail.catappsrvs.services.IApplication;
-import org.esupportail.catappsrvs.services.ICrud;
-import org.esupportail.catappsrvs.web.dto.JsApp;
+import org.esupportail.catappsrvs.web.json.JsApp;
 import org.esupportail.catappsrvs.web.utils.Functions;
 import org.springframework.stereotype.Component;
 
@@ -28,17 +27,15 @@ import static fj.data.Validation.fail;
 import static fj.data.Validation.failNEL;
 import static fj.data.Validation.success;
 import static javax.ws.rs.core.Response.ResponseBuilder;
-import static org.esupportail.catappsrvs.web.dto.JsApp.Acces;
-import static org.esupportail.catappsrvs.web.dto.Conversions.*;
-import static org.esupportail.catappsrvs.web.dto.Validations.*;
+import static org.esupportail.catappsrvs.model.CommonTypes.Caption.*;
+import static org.esupportail.catappsrvs.model.CommonTypes.Title.*;
+import static org.esupportail.catappsrvs.web.json.Conversions.*;
+import static org.esupportail.catappsrvs.web.json.Validations.*;
 import static org.esupportail.catappsrvs.web.utils.Functions.arrayToList;
 import static org.esupportail.catappsrvs.model.Application.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Code.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Description.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.LdapGroup.*;
-import static org.esupportail.catappsrvs.model.CommonTypes.Libelle.*;
-import static org.esupportail.catappsrvs.model.CommonTypes.Titre.*;
-import static org.esupportail.catappsrvs.model.Versionned.Version.*;
 
 @Slf4j @Getter(AccessLevel.NONE) // lombok
 @Path("applications") // jaxrs
@@ -55,14 +52,14 @@ public final class ApplicationResource extends CrudResource<Application, IApplic
 
     @Override
     protected Validation<Exception, Application> validAndBuild(JsApp app) {
-        return validDomaines(app.domaines()).map(arrayToList).nel()
+        return validDomaines(app.domains()).map(arrayToList).nel()
                 .accumulate(sm,
-                        validGroupe(app.groupe()).nel(),
+                        validGroupe(app.group()).nel(),
                         validDescr(app.description()).nel(),
-                        validAccess(app.acces()).nel(),
+                        validAccess(app.activation()).nel(),
                         validUrl(app.url()).nel().bind(buildUrl),
-                        validLibelle(app.libelle()).nel(),
-                        validTitre(app.titre()).nel(),
+                        validLibelle(app.caption()).nel(),
+                        validTitre(app.title()).nel(),
                         validCode(app.code()).nel(),
                         buildApp)
                 .f().map(Functions.fieldsException);
@@ -72,13 +69,13 @@ public final class ApplicationResource extends CrudResource<Application, IApplic
     protected Validation<Exception, Response> readResp(Application app, final UriInfo uriInfo) {
         try {
             final ResponseBuilder domsBuilder =
-                    app.domaines().foldLeft(
-                            new F2<ResponseBuilder, Domaine, ResponseBuilder>() {
-                                public ResponseBuilder f(ResponseBuilder rb, Domaine dom) {
+                    app.domains().foldLeft(
+                            new F2<ResponseBuilder, Domain, ResponseBuilder>() {
+                                public ResponseBuilder f(ResponseBuilder rb, Domain dom) {
                                     final String code = dom.code().value();
                                     return rb.link(
                                             uriInfo.getBaseUriBuilder()
-                                                    .path(DomaineResource.class)
+                                                    .path(DomainResource.class)
                                                     .path(code)
                                                     .build(),
                                             "dom:" + code);
@@ -102,17 +99,16 @@ public final class ApplicationResource extends CrudResource<Application, IApplic
         }
     }
 
-    private final F8<List<String>, String, String, Acces, URL, String, String, String, Application> buildApp =
-            new F8<List<String>, String, String, Acces, URL, String, String, String, Application>() {
-                public Application f(List<String> doms, String grp, String descr, Acces access, URL url, String lib, String titre, String code) {
+    private final F8<List<String>, String, String, JsApp.JsActivation, URL, String, String, String, Application> buildApp =
+            new F8<List<String>, String, String, JsApp.JsActivation, URL, String, String, String, Application>() {
+                public Application f(List<String> doms, String grp, String descr, JsApp.JsActivation activ, URL url, String lib, String titre, String code) {
                     return Application.application(
-                            version(-1),
                             code(code),
-                            titre(titre),
-                            libelle(lib),
+                            title(titre),
+                            caption(lib),
                             description(descr),
                             url,
-                            Accessibilite.valueOf(access.name()),
+                            Activation.valueOf(activ.name()),
                             ldapGroup(grp),
                             doms.map(domWithCode));
                 }

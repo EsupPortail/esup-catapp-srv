@@ -5,9 +5,9 @@ import fj.data.Either;
 import fj.data.Option;
 import fj.data.Tree;
 import org.esupportail.catappsrvs.model.CommonTypes;
-import org.esupportail.catappsrvs.model.Domaine;
+import org.esupportail.catappsrvs.model.Domain;
 import org.esupportail.catappsrvs.model.User;
 
-public interface IDomaine extends ICrud<Domaine> {
-    Either<Exception, Tree<Option<Domaine>>> findDomaines(CommonTypes.Code code, User user);
+public interface IDomain extends ICrud<Domain> {
+    Either<Exception, Tree<Option<Domain>>> findDomaines(CommonTypes.Code code, User user);
 }

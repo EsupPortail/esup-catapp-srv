@@ -1,4 +1,4 @@
-package org.esupportail.catappsrvs.web.dto;
+package org.esupportail.catappsrvs.web.json;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -16,21 +16,21 @@ import static org.codehaus.jackson.annotate.JsonAutoDetect.Visibility.ANY;
 @JsonAutoDetect(fieldVisibility = ANY)
 @Accessors(fluent = true) @Wither
 public class JsApp implements JsHasCode<Application> {
-    String code, titre, libelle, url, description, groupe;
-    Acces acces;
-    String[] domaines;
+    String code, title, caption, url, description, group;
+    JsActivation activation;
+    String[] domains;
 
     @JsonCreator
     public static JsApp jsApp(@JsonProperty("code") String code,
-                              @JsonProperty("title") String titre,
-                              @JsonProperty("wording") String libelle,
+                              @JsonProperty("title") String title,
+                              @JsonProperty("caption") String caption,
                               @JsonProperty("url") String url,
-                              @JsonProperty("accessibility") Acces accessibilite,
+                              @JsonProperty("activation") JsActivation activation,
                               @JsonProperty("description") String description,
-                              @JsonProperty("group") String groupe,
-                              @JsonProperty("domains") String[] domaines) {
-        return new JsApp(code, titre, libelle, url, description, groupe, accessibilite, domaines);
+                              @JsonProperty("group") String group,
+                              @JsonProperty("domains") String[] domains) {
+        return new JsApp(code, title, caption, url, description, group, activation, domains);
     }
 
-    public static enum Acces { Unaccessible, Accessible }
+    public static enum JsActivation {Deactivated, Activated}
 }

@@ -4,13 +4,12 @@ import fj.*;
 import fj.data.*;
 import fj.data.List;
 import org.esupportail.catappsrvs.services.ICrud;
-import org.esupportail.catappsrvs.web.dto.JsHasCode;
+import org.esupportail.catappsrvs.web.json.JsHasCode;
 import org.esupportail.catappsrvs.web.utils.Functions;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 
-import static fj.Function.curry;
 import static fj.data.$._;
 import static fj.data.Array.array;
 import static fj.data.Array.single;
@@ -20,8 +19,7 @@ import static fj.data.Validation.validation;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.ResponseBuilder;
 import static org.esupportail.catappsrvs.model.CommonTypes.Code.*;
-import static org.esupportail.catappsrvs.model.Versionned.Version;
-import static org.esupportail.catappsrvs.web.dto.Validations.validCode;
+import static org.esupportail.catappsrvs.web.json.Validations.validCode;
 import static org.esupportail.catappsrvs.web.utils.Functions.fieldsException;
 import static org.esupportail.catappsrvs.web.utils.Functions.treatErrors;
 
@@ -86,7 +84,7 @@ public abstract class CrudResource<T, S extends ICrud<T>, D extends JsHasCode<T>
                 .f().map(Functions.fieldsException).nel()
                 .bind(new F<String, Validation<NonEmptyList<Exception>, Response>>() {
                     public Validation<NonEmptyList<Exception>, Response> f(String validCode) {
-                        return validation(srv.read(code(validCode), Option.<Version>none())).nel()
+                        return validation(srv.read(code(validCode))).nel()
                                 .bind(new F<T, Validation<NonEmptyList<Exception>, Response>>() {
                                     public Validation<NonEmptyList<Exception>, Response> f(T t) {
                                         return readResp(t, uriInfo).nel();

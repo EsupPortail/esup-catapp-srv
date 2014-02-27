@@ -4,11 +4,11 @@ import fj.*;
 import fj.data.*;
 import lombok.extern.slf4j.Slf4j;
 import org.esupportail.catappsrvs.model.Application;
-import org.esupportail.catappsrvs.model.Domaine;
-import org.esupportail.catappsrvs.services.IDomaine;
-import org.esupportail.catappsrvs.web.dto.JSDomTree;
-import org.esupportail.catappsrvs.web.dto.JsDom;
-import org.esupportail.catappsrvs.web.dto.Validations;
+import org.esupportail.catappsrvs.model.Domain;
+import org.esupportail.catappsrvs.services.IDomain;
+import org.esupportail.catappsrvs.web.json.JSDomTree;
+import org.esupportail.catappsrvs.web.json.JsDom;
+import org.esupportail.catappsrvs.web.json.Validations;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
@@ -18,33 +18,30 @@ import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 
 import static fj.Function.curry;
-import static fj.data.Array.array;
-import static fj.data.Array.single;
 import static fj.data.Option.*;
 import static fj.data.Validation.*;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.ResponseBuilder;
+import static org.esupportail.catappsrvs.model.CommonTypes.Caption.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Code.*;
-import static org.esupportail.catappsrvs.model.CommonTypes.Libelle.*;
-import static org.esupportail.catappsrvs.model.Domaine.*;
+import static org.esupportail.catappsrvs.model.Domain.*;
 import static org.esupportail.catappsrvs.model.User.Uid.*;
 import static org.esupportail.catappsrvs.model.User.*;
-import static org.esupportail.catappsrvs.model.Versionned.Version.*;
-import static org.esupportail.catappsrvs.web.dto.Conversions.*;
-import static org.esupportail.catappsrvs.web.dto.Validations.*;
+import static org.esupportail.catappsrvs.web.json.Conversions.*;
+import static org.esupportail.catappsrvs.web.json.Validations.*;
 import static org.esupportail.catappsrvs.web.utils.Functions.*;
 
 @Slf4j // lombok
 @Path("domains") // jaxrs
 @Component // spring
 @SuppressWarnings("SpringJavaAutowiringInspection") // intellij
-public final class DomaineResource extends CrudResource<Domaine, IDomaine, JsDom> {
-    private DomaineResource(IDomaine srv) {
+public final class DomainResource extends CrudResource<Domain, IDomain, JsDom> {
+    private DomainResource(IDomain srv) {
         super(srv);
     }
 
-    public static DomaineResource domaineResource(IDomaine srv) {
-        return new DomaineResource(srv);
+    public static DomainResource domaineResource(IDomain srv) {
+        return new DomainResource(srv);
     }
 
     @GET
@@ -61,9 +58,9 @@ public final class DomaineResource extends CrudResource<Domaine, IDomaine, JsDom
                 .bind(new F<P2<String, String>, Validation<NonEmptyList<Exception>, Response>>() {
                     public Validation<NonEmptyList<Exception>, Response> f(P2<String, String> pair) {
                         return validation(srv.findDomaines(code(pair._1()), user(uid(pair._2())))).nel()
-                                .map(new F<Tree<Option<Domaine>>, Response>() {
-                                    public Response f(Tree<Option<Domaine>> domaines) {
-                                        final Tree<Option<JsDom>> doms = domaines.fmap(domaineToDTO.mapOption());
+                                .map(new F<Tree<Option<Domain>>, Response>() {
+                                    public Response f(Tree<Option<Domain>> domaines) {
+                                        final Tree<Option<JsDom>> doms = domaines.fmap(domaineToJson.mapOption());
                                         final Tree<Option<JSDomTree>> domTree =
                                                 doms.fmap(new F<Option<JsDom>, Option<JSDomTree>>() {
                                                     public Option<JSDomTree> f(Option<JsDom> opt) {
@@ -132,10 +129,10 @@ public final class DomaineResource extends CrudResource<Domaine, IDomaine, JsDom
 
 
     @Override
-    protected Validation<Exception, Response> createResp(Domaine domaine, UriInfo uriInfo) {
+    protected Validation<Exception, Response> createResp(Domain domain, UriInfo uriInfo) {
         try {
             final UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
-            final URI location = uriBuilder.path(domaine.code().value()).build();
+            final URI location = uriBuilder.path(domain.code().value()).build();
             return success(Response.created(location).build());
         } catch (Exception e) {
             return fail(e);
@@ -143,24 +140,24 @@ public final class DomaineResource extends CrudResource<Domaine, IDomaine, JsDom
     }
 
     @Override
-    protected Validation<Exception, Response> readResp(Domaine domaine, final UriInfo uriInfo) {
+    protected Validation<Exception, Response> readResp(Domain domain, final UriInfo uriInfo) {
         try {
             final ResponseBuilder sousDomsBuilder =
-                    domaine.domaines().foldLeft(
-                            new F2<ResponseBuilder, Domaine, ResponseBuilder>() {
-                                public ResponseBuilder f(ResponseBuilder rb, Domaine dom) {
+                    domain.domains().foldLeft(
+                            new F2<ResponseBuilder, Domain, ResponseBuilder>() {
+                                public ResponseBuilder f(ResponseBuilder rb, Domain dom) {
                                     final String code = dom.code().value();
                                     return rb.link(
                                             uriInfo.getBaseUriBuilder()
-                                                    .path(DomaineResource.class)
+                                                    .path(DomainResource.class)
                                                     .path(code)
                                                     .build(),
                                             "dom:" + code);
                                 }
                             },
-                            Response.ok(domaineToDTO(domaine)));
+                            Response.ok(domaineToJson(domain)));
             final ResponseBuilder appsBuilder =
-                    domaine.applications().foldLeft(
+                    domain.applications().foldLeft(
                             new F2<ResponseBuilder, Application, ResponseBuilder>() {
                                 public ResponseBuilder f(ResponseBuilder rb, Application app) {
                                     final String code = app.code().value();
@@ -180,24 +177,23 @@ public final class DomaineResource extends CrudResource<Domaine, IDomaine, JsDom
     }
 
     @Override
-    protected Validation<Exception, Domaine> validAndBuild(JsDom domaine) {
+    protected Validation<Exception, Domain> validAndBuild(JsDom domaine) {
         return validApplications(domaine.applications()).map(arrayToList).nel()
-                .accumapply(sm, validDomaines(domaine.domaines()).map(arrayToList).nel()
+                .accumapply(sm, validDomaines(domaine.domains()).map(arrayToList).nel()
                         .accumapply(sm, validParent(domaine.parent()).nel()
-                                .accumapply(sm, validLibelle(domaine.wording()).nel()
+                                .accumapply(sm, validLibelle(domaine.caption()).nel()
                                         .accumapply(sm, validCode(domaine.code()).nel()
                                                 .accumapply(sm, Validation.<String, Integer>success(-1).nel()
                                                         .map(curry(buildDomain)))))))
                 .f().map(fieldsException);
     }
 
-    private final F6<Integer, String, String, String, List<String>, List<String>, Domaine> buildDomain =
-            new F6<Integer, String, String, String, List<String>, List<String>, Domaine>() {
-                public Domaine f(Integer ver, String code, String lib, String parent, List<String> ssdoms, List<String> apps) {
-                    return domaine(
-                            version(ver),
+    private final F6<Integer, String, String, String, List<String>, List<String>, Domain> buildDomain =
+            new F6<Integer, String, String, String, List<String>, List<String>, Domain>() {
+                public Domain f(Integer ver, String code, String lib, String parent, List<String> ssdoms, List<String> apps) {
+                    return domain(
                             code(code),
-                            libelle(lib),
+                            caption(lib),
                             fromString(parent).map(domWithCode),
                             ssdoms.map(domWithCode),
                             apps.map(appWithCode));

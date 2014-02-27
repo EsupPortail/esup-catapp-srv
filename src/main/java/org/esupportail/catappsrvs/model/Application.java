@@ -1,8 +1,7 @@
 package org.esupportail.catappsrvs.model;
 
-import fj.F2;
-import fj.P4;
-import fj.P5;
+import fj.Equal;
+import fj.F;
 import fj.data.List;
 import fj.data.Option;
 import lombok.AccessLevel;
@@ -12,10 +11,10 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.Wither;
-import org.hibernate.annotations.Immutable;
-import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -23,31 +22,29 @@ import static fj.data.List.iterableList;
 import static fj.data.Option.fromNull;
 import static org.esupportail.catappsrvs.model.CommonTypes.*;
 
-@EqualsAndHashCode(of = {"code", "version"}, doNotUseGetters = true)
-@ToString @Getter @Accessors(fluent = true)
+@EqualsAndHashCode(of = "code", doNotUseGetters = true)
+@ToString(of = "code", doNotUseGetters = true)
+@Getter @Accessors(fluent = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Entity @Immutable
-public final class Application implements Versionned<Application>, HasCode<Application> {
-    public static enum Accessibilite { Accessible, Inaccessible }
+@Entity
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = "code"))
+public final class Application implements HasCode<Application> {
+    public static enum Activation { Activated, Deactivated }
 
     @Getter(AccessLevel.NONE)
     @Id @Column(name = "pk", nullable = false)
     @GeneratedValue(strategy= GenerationType.AUTO)
     final Long pk;
 
-    @NaturalId @Embedded @Wither
-    @Column(nullable = false)
-    final Version version;
-
-    @NaturalId @Wither
+    @Wither
     @Embedded @Column(nullable = false, length = 10)
     final Code code;
 
     @Embedded @Column(length = 200) @Wither
-    final Titre titre;
+    final Title title;
 
     @Embedded @Column(length = 200) @Wither
-    final Libelle libelle;
+    final Caption caption;
 
     @Embedded @Column(length = 3000) @Wither
     final Description description;
@@ -56,91 +53,70 @@ public final class Application implements Versionned<Application>, HasCode<Appli
     final URL url;
 
     @Column @Enumerated(EnumType.STRING) @Wither
-    final Accessibilite accessibilite;
+    final Activation activation;
 
     @Embedded @Column(length = 200) @Wither
-    final LdapGroup groupe;
+    final LdapGroup group;
 
     @Getter(AccessLevel.NONE)
     @ManyToMany(mappedBy = "applications")
-    final java.util.List<Domaine> domaines;
+    final java.util.List<Domain> domains;
 
     private Application() { // for hibernate
         pk = null;
-        version = null;
         code = null;
-        titre = null;
-        libelle = null;
+        title = null;
+        caption = null;
         description = null;
         url = null;
-        accessibilite = null;
-        groupe = null;
-        domaines  = null;
+        activation = null;
+        group = null;
+        domains = null;
     }
 
     private Application(Long pk,
-                        Version version,
-                        Code code,
-                        Titre titre,
-                        Libelle libelle,
-                        Description description,
-                        URL url,
-                        Accessibilite accessibilite,
-                        LdapGroup groupe,
-                        java.util.List<Domaine> domaines) {
+                          Code code,
+                          Title title,
+                          Caption caption,
+                          Description description,
+                          URL url,
+                          Activation activation,
+                          LdapGroup group,
+                          java.util.List<Domain> domains) {
         this.pk = pk;
-        this.version = version;
         this.code = code;
-        this.titre = titre;
-        this.libelle = libelle;
+        this.title = title;
+        this.caption = caption;
         this.description = description;
         this.url = url;
-        this.accessibilite = accessibilite;
-        this.groupe = groupe;
-        this.domaines = domaines;
+        this.activation = activation;
+        this.group = group;
+        this.domains = domains;
     }
 
     /**
      * TODO : trop d'arguments => refactorer
      */
-    public static Application application(Version version,
-                                          Code code,
-                                          Titre titre,
-                                          Libelle libelle,
+    public static Application application(Code code,
+                                          Title title,
+                                          Caption caption,
                                           Description description,
                                           URL url,
-                                          Accessibilite accessibility,
-                                          LdapGroup groupe,
-                                          List<Domaine> domaines) {
-        return new Application(null, version, code, titre, libelle,
-                description, url, accessibility, groupe,
+                                          Activation accessibility,
+                                          LdapGroup group,
+                                          List<Domain> domaines) {
+        return new Application(null, code, title, caption,
+                description, url, accessibility, group,
                 new ArrayList<>(domaines.toCollection()));
     }
 
-    public static final F2<
-            P4<Version, Code, Titre, Libelle>,
-            P5<Description, URL, Accessibilite, LdapGroup, List<Domaine>>,
-            Application> application =
-            new F2<P4<Version, Code, Titre, Libelle>, P5<Description, URL, Accessibilite, LdapGroup, List<Domaine>>, Application>() {
-                public Application f(P4<Version, Code, Titre, Libelle> p4, P5<Description, URL, Accessibilite, LdapGroup, List<Domaine>> p5) {
-                    return application(
-                            p4._1(), p4._2(), p4._3(), p4._4(),
-                            p5._1(), p5._2(), p5._3(), p5._4(), p5._5());
-                }
-            };
-
-    public Application withNullPk() {
-        return new Application(null, version, code, titre, libelle,
-                description, url, accessibilite, groupe, domaines);
-    }
-
-    public Application withDomaines(final List<Domaine> domaines) {
-        return new Application(pk, version, code, titre, libelle,
-                description, url, accessibilite, groupe,
+    public Application withDomains(final List<Domain> domaines) {
+        return new Application(pk, code, title, caption,
+                description, url, activation, group,
                 new ArrayList<>(domaines.toCollection()));
     }
 
     public Option<Long> pk() { return fromNull(pk); }
 
-    public List<Domaine> domaines() { return iterableList(domaines); }
+    public List<Domain> domains() { return iterableList(domains); }
 }

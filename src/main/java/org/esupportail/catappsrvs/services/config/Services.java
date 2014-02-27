@@ -2,12 +2,12 @@ package org.esupportail.catappsrvs.services.config;
 
 import com.unboundid.ldap.sdk.*;
 import org.esupportail.catappsrvs.dao.IApplicationDao;
-import org.esupportail.catappsrvs.dao.IDomaineDao;
+import org.esupportail.catappsrvs.dao.IDomainDao;
 import org.esupportail.catappsrvs.dao.config.Daos;
 import org.esupportail.catappsrvs.services.ApplicationSrv;
-import org.esupportail.catappsrvs.services.DomaineSrv;
+import org.esupportail.catappsrvs.services.DomainSrv;
 import org.esupportail.catappsrvs.services.IApplication;
-import org.esupportail.catappsrvs.services.IDomaine;
+import org.esupportail.catappsrvs.services.IDomain;
 import org.esupportail.catappsrvs.services.ldap.ILdap;
 import org.esupportail.catappsrvs.services.ldap.LdapSrv;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,10 +23,10 @@ import javax.inject.Inject;
 public class Services {
 
     @Bean @Inject
-    public IDomaine domaineSrv(IDomaineDao domaineDao,
+    public IDomain domaineSrv(IDomainDao domaineDao,
                                PlatformTransactionManager txManager,
                                ILdap ldap) {
-        return DomaineSrv.domaineSrv(domaineDao, txManager, ldap);
+        return DomainSrv.domaineSrv(domaineDao, txManager, ldap);
     }
 
     @Bean @Inject

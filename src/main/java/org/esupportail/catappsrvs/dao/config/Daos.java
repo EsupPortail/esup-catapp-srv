@@ -1,10 +1,9 @@
 package org.esupportail.catappsrvs.dao.config;
 
 import fj.P1;
-import fj.data.Either;
 import org.esupportail.catappsrvs.dao.*;
 import org.esupportail.catappsrvs.model.Application;
-import org.esupportail.catappsrvs.model.Domaine;
+import org.esupportail.catappsrvs.model.Domain;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -20,8 +19,8 @@ public class Daos {
     EntityManager entityManager;
 
     @Bean
-    IDomaineDao domaineDao() {
-        return DomaineDao.domaineDao(entityManager, new P1<ICrudDao<Application>>() {
+    IDomainDao domaineDao() {
+        return DomainDao.domaineDao(entityManager, new P1<ICrudDao<Application>>() {
             public ICrudDao<Application> _1() {
                 return applicationDao();
             }
@@ -30,8 +29,8 @@ public class Daos {
 
     @Bean
     IApplicationDao applicationDao() {
-        return ApplicationDao.applicationDao(entityManager, new P1<ICrudDao<Domaine>>() {
-            public ICrudDao<Domaine> _1() {
+        return ApplicationDao.applicationDao(entityManager, new P1<ICrudDao<Domain>>() {
+            public ICrudDao<Domain> _1() {
                 return domaineDao();
             }
         });

@@ -14,7 +14,7 @@ import org.dbunit.dataset.DefaultTable;
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.operation.DatabaseOperation;
 import org.esupportail.catappsrvs.model.Application;
-import org.esupportail.catappsrvs.model.Domaine;
+import org.esupportail.catappsrvs.model.Domain;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,8 +22,12 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
@@ -37,16 +41,14 @@ import static fj.data.List.list;
 import static fj.data.List.single;
 import static fj.data.Option.some;
 import static org.dbunit.dataset.datatype.DataType.*;
-import static org.esupportail.catappsrvs.model.Application.Accessibilite.Accessible;
-import static org.esupportail.catappsrvs.model.Application.Version;
-import static org.esupportail.catappsrvs.model.Application.application;
-import static org.esupportail.catappsrvs.model.CommonTypes.Code.code;
-import static org.esupportail.catappsrvs.model.CommonTypes.Description.description;
-import static org.esupportail.catappsrvs.model.CommonTypes.LdapGroup.ldapGroup;
-import static org.esupportail.catappsrvs.model.CommonTypes.Libelle.libelle;
-import static org.esupportail.catappsrvs.model.CommonTypes.Titre.titre;
-import static org.esupportail.catappsrvs.model.Domaine.domaine;
-import static org.esupportail.catappsrvs.model.Versionned.Version.version;
+import static org.esupportail.catappsrvs.model.Application.Activation.Activated;
+import static org.esupportail.catappsrvs.model.Application.*;
+import static org.esupportail.catappsrvs.model.CommonTypes.Caption.*;
+import static org.esupportail.catappsrvs.model.CommonTypes.Code.*;
+import static org.esupportail.catappsrvs.model.CommonTypes.Description.*;
+import static org.esupportail.catappsrvs.model.CommonTypes.LdapGroup.*;
+import static org.esupportail.catappsrvs.model.CommonTypes.Title.*;
+import static org.esupportail.catappsrvs.model.Domain.*;
 import static org.esupportail.catappsrvs.model.utils.Equals.domaineCompleteEq;
 import static org.junit.Assert.assertTrue;
 
@@ -61,57 +63,56 @@ public class TestDaos {
     DataSource dataSource;
 
     @Inject
-    IDomaineDao domaineDao;
+    IDomainDao domaineDao;
+
+    @Inject
+    PlatformTransactionManager transactionManager;
 
     IDatabaseConnection dbunitConn;
 
     private final Application firstApp =
             application(
-                    version(1),
                     code("APP1"),
-                    titre("Application 1"),
-                    libelle("L'appli 1"),
+                    title("Application 1"),
+                    caption("L'appli 1"),
                     description(""),
                     buildUrl("http://toto.fr"),
-                    Accessible,
+                    Activated,
                     ldapGroup("UR1:57SI"),
                     single(this.firstDom));
 
-    private final Domaine firstDom =
-            domaine(version(1),
-                    code("DOM1"),
-                    libelle("Domaine 1"),
-                    Option.<Domaine>some(null),
-                    List.<Domaine>nil(),
+    private final Domain firstDom =
+            domain(code("DOM1"),
+                    caption("Domain 1"),
+                    Option.<Domain>some(null),
+                    List.<Domain>nil(),
                     single(firstApp));
 
     @Before
     public void setUp() throws DatabaseUnitException, SQLException {
         final IDataSet dataSet = new DefaultDataSet(new DefaultTable[] {
-                new DefaultTable("domaine", new Column[]{
+                new DefaultTable("domain", new Column[]{
                         new Column("pk", BIGINT),
-                        new Column("version", INTEGER),
                         new Column("code", VARCHAR),
-                        new Column("libelle", VARCHAR),
+                        new Column("caption", VARCHAR),
                         new Column("parent_pk", BIGINT)
                 }){{
                     addRow(domaineToRow(1L, firstDom));
                 }},
                 new DefaultTable("application", new Column[]{
                         new Column("pk", BIGINT),
-                        new Column("version", INTEGER),
                         new Column("code", VARCHAR),
-                        new Column("titre", VARCHAR),
-                        new Column("libelle", VARCHAR),
+                        new Column("title", VARCHAR),
+                        new Column("caption", VARCHAR),
                         new Column("description", VARCHAR),
                         new Column("url", VARCHAR),
-                        new Column("accessibilite", VARCHAR),
-                        new Column("groupe", VARCHAR),
+                        new Column("activation", VARCHAR),
+                        new Column("ldapgroup", VARCHAR),
                 }){{
                     addRow(applicationToRow(1L, firstApp));
                 }},
-                new DefaultTable("domaine_application", new Column[]{
-                        new Column("domaine_pk", BIGINT),
+                new DefaultTable("domain_application", new Column[]{
+                        new Column("domain_pk", BIGINT),
                         new Column("application_pk", BIGINT)
                 }){{
                     addRow(new Object[] {1L, 1L});
@@ -128,12 +129,11 @@ public class TestDaos {
 
     @Test @Transactional
     public void testCreate() {
-        final Either<Exception, Domaine> result = domaineDao.create(
-                domaine(version(-1),
-                        code("DOM2"),
-                        libelle("Domaine 2"),
+        final Either<Exception, Domain> result = domaineDao.create(
+                domain(code("DOM2"),
+                        caption("Domain 2"),
                         some(firstDom),
-                        List.<Domaine>nil(),
+                        List.<Domain>nil(),
                         list(firstApp)));
 
         for (Exception e: result.left()) {
@@ -141,19 +141,16 @@ public class TestDaos {
             assertTrue("create ne devrait pas lever d'exception", false);
         }
 
-        for (Domaine domaine : result.right()) {
+        for (Domain domain : result.right()) {
             assertTrue(
                     "create doit se traduire par l'affectation d'une clé primaire",
-                    domaine.pk().isSome());
-            assertTrue(
-                    "create doit se traduire par l'affectation d'une version égale à 1",
-                    domaine.version().equals(version(1)));
+                    domain.pk().isSome());
         }
     }
 
     @Test
     public void testRead() {
-        final Either<Exception, Domaine> result = domaineDao.read(firstDom.code(), some(firstDom.version()));
+        final Either<Exception, Domain> result = domaineDao.read(firstDom.code());
 
         for (Exception e: result.left()) {
             e.printStackTrace();
@@ -162,48 +159,43 @@ public class TestDaos {
                     : "read ne devrait pas lever d'exception", false);
         }
 
-        for (Domaine domaine : result.right())
-            assertTrue("read doit retourner la bonne entité", domaineCompleteEq.eq(firstDom, domaine));
+        for (Domain domain : result.right())
+            assertTrue("read doit retourner la bonne entité", domaineCompleteEq.eq(firstDom, domain));
     }
 
-    @Test @Transactional
-    public void testUpdate() {
-        final Domaine domToCreate = domaine(version(-1),
-                code("DOM2"),
-                libelle("Domaine 2"),
-                Option.<Domaine>none(),
-                List.<Domaine>nil(),
-                List.<Application>nil());
-        domaineDao.create(domToCreate);
-
-        final Domaine domToUpdate = firstDom
-                .withLibelle(libelle("UPDATED Domaine 1"))
-                .withDomaines(single(domToCreate))
+    @Test
+    public void testUpdate() throws SQLException {
+        final Domain domToUpdate = firstDom
+                .withCaption(caption("UPDATED Domain 1"))
                 .withApplications(single(firstApp));
 
-        final Either<Exception, Domaine> dom = domaineDao.update(domToUpdate);
+        final Either<Exception, Domain> dom =
+                new TransactionTemplate(transactionManager).execute(new TransactionCallback<Either<Exception, Domain>>() {
+            public Either<Exception, Domain> doInTransaction(TransactionStatus status) {
+                return domaineDao.update(domToUpdate);
+            }
+        });
 
-        final Either<Exception, Domaine> readDom = domaineDao.read(firstDom.code(), Option.<Version>none());
+        final Either<Exception, Domain> readDom =
+                new TransactionTemplate(transactionManager).execute(new TransactionCallback<Either<Exception, Domain>>() {
+                    public Either<Exception, Domain> doInTransaction(TransactionStatus status) {
+                        return domaineDao.read(firstDom.code());
+                    }
+                });
 
         for (Exception e : dom.left().toList().append(readDom.left().toList()))
             throw new AssertionError(e);
 
-        for (P2<Domaine, Domaine> pair : dom.right().toList().zip(readDom.right().toList())) {
-            final Domaine refDom = domToUpdate
-                    .withDomaines(single(domToCreate.withVersion(version(2)))) // une mise à jour parent se traduit par une mise à jour enfant
-                    .withApplications(single(firstApp.withVersion(firstApp.version().plus(1))))
-                    .withVersion(domToUpdate.version().plus(1));
+        for (P2<Domain, Domain> pair : dom.right().toList().zip(readDom.right().toList())) {
             assertTrue("update doit mettre à jour les données",
-                    domaineCompleteEq.eq(refDom, pair._2())
+                    domaineCompleteEq.eq(domToUpdate, pair._2())
                             && domaineCompleteEq.eq(pair._1(), pair._2()));
-            assertTrue("update doit se traduire par une incrémentation de la version",
-                    pair._1().version().equals(version(2)) && pair._2().version().equals(version(2)));
         }
     }
 
     @Test
     public void testList() {
-        Either<Exception, List<Domaine>> listDomaines = domaineDao.list();
+        Either<Exception, List<Domain>> listDomaines = domaineDao.list();
         assertTrue("list ne devrait pas lever d'exception", listDomaines.isRight());
     }
 
@@ -212,35 +204,33 @@ public class TestDaos {
         assertTrue("delete ne doit pas lever d'exception", domaineDao.delete(firstDom.code()).isRight());
     }
 
-    private Object[] domaineToRow(Long pk, Domaine domaine) {
+    private Object[] domaineToRow(Long pk, Domain domain) {
         return new Object[] {
                 pk,
-                domaine.version().value(),
-                domaine.code().value(),
-                domaine.libelle().value(),
-                getParentPk(domaine)
+                domain.code().value(),
+                domain.caption().value(),
+                getParentPk(domain)
         };
     }
 
     private Object[] applicationToRow(Long pk, Application application) {
         return new Object[] {
                 pk,
-                application.version().value(),
                 application.code().value(),
-                application.titre().value(),
-                application.libelle().value(),
+                application.title().value(),
+                application.caption().value(),
                 application.description().value(),
                 application.url(),
-                application.accessibilite().toString(),
-                application.groupe().value()
+                application.activation().toString(),
+                application.group().value()
         };
     }
 
-    private Long getParentPk(Domaine domaine) {
-        return domaine
+    private Long getParentPk(Domain domain) {
+        return domain
                 .parent()
-                .map(new F<Domaine, Long>() {
-                    public Long f(Domaine parent) {
+                .map(new F<Domain, Long>() {
+                    public Long f(Domain parent) {
                         return parent.pk().toNull();
                     }
                 })

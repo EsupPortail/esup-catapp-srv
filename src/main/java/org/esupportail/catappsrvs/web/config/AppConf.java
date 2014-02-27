@@ -1,10 +1,10 @@
 package org.esupportail.catappsrvs.web.config;
 
 import org.esupportail.catappsrvs.services.IApplication;
-import org.esupportail.catappsrvs.services.IDomaine;
+import org.esupportail.catappsrvs.services.IDomain;
 import org.esupportail.catappsrvs.services.config.Services;
 import org.esupportail.catappsrvs.web.ApplicationResource;
-import org.esupportail.catappsrvs.web.DomaineResource;
+import org.esupportail.catappsrvs.web.DomainResource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -16,8 +16,8 @@ import javax.inject.Inject;
 public class AppConf {
 
     @Bean @Inject
-    public DomaineResource domaineResource(IDomaine domaineSrv) {
-        return DomaineResource.domaineResource(domaineSrv);
+    public DomainResource domaineResource(IDomain domaineSrv) {
+        return DomainResource.domaineResource(domaineSrv);
     }
 
     @Bean @Inject

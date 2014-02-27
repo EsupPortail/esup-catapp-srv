@@ -135,7 +135,7 @@ class Conf {
         }
     }
 
-    @Bean @Profile("!TEST")
+    //@Bean @Profile({"TUTU", "!TEST"})
     public SpringLiquibase liquibase() throws LiquibaseException {
         final SpringLiquibase liquibase = new SpringLiquibase();
         liquibase.setDataSource(dataSource);

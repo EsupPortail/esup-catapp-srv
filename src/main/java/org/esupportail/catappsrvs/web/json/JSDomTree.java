@@ -1,4 +1,4 @@
-package org.esupportail.catappsrvs.web.dto;
+package org.esupportail.catappsrvs.web.json;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

@@ -22,18 +22,18 @@ public final class CommonTypes {
     }
 
     @Embeddable @EqualsAndHashCode @ToString
-    @RequiredArgsConstructor(staticName = "libelle")
-    public static final class Libelle {
-        @Column(name = "libelle") private final String value;
-        private Libelle() { value = null; }
+    @RequiredArgsConstructor(staticName = "caption")
+    public static final class Caption {
+        @Column(name = "caption") private final String value;
+        private Caption() { value = null; }
         public String value() { return value; }
     }
 
     @Embeddable @EqualsAndHashCode @ToString
-    @RequiredArgsConstructor(staticName = "titre")
-    public static final class Titre {
-        @Column(name = "titre") private final String value;
-        private Titre() { value = null; }
+    @RequiredArgsConstructor(staticName = "title")
+    public static final class Title {
+        @Column(name = "title") private final String value;
+        private Title() { value = null; }
         public String value() { return value; }
     }
 
@@ -48,7 +48,7 @@ public final class CommonTypes {
     @Embeddable @EqualsAndHashCode @ToString
     @RequiredArgsConstructor(staticName = "ldapGroup")
     public static final class LdapGroup {
-        @Column(name = "groupe") private final String value;
+        @Column(name = "ldapgroup") private final String value;
         private LdapGroup() { value = null; }
         public String value() { return value; }
     }

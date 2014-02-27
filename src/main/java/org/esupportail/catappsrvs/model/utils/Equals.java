@@ -4,15 +4,14 @@ import fj.*;
 import fj.data.List;
 import fj.data.Option;
 import org.esupportail.catappsrvs.model.Application;
-import org.esupportail.catappsrvs.model.Domaine;
+import org.esupportail.catappsrvs.model.Domain;
 
 import java.net.URL;
 
 import static fj.Bottom.error;
 import static fj.P.p;
-import static org.esupportail.catappsrvs.model.Application.Accessibilite;
+import static org.esupportail.catappsrvs.model.Application.Activation;
 import static org.esupportail.catappsrvs.model.CommonTypes.*;
-import static org.esupportail.catappsrvs.model.Versionned.Version;
 
 public final class Equals {
     private Equals() { throw error("Unsupported"); }
@@ -20,50 +19,46 @@ public final class Equals {
     public static final Equal<Application> applicationCompleteEq =
             Equal.p2Equal(
                     Equal.p4Equal(
-                            Equal.<Version>anyEqual(),
                             Equal.<Code>anyEqual(),
-                            Equal.<Titre>anyEqual(),
-                            Equal.<Libelle>anyEqual()),
-                    Equal.p5Equal(
-                            Equal.<Description>anyEqual(),
+                            Equal.<Title>anyEqual(),
+                            Equal.<Caption>anyEqual(),
+                            Equal.<Description>anyEqual()),
+                    Equal.p4Equal(
                             Equal.<URL>anyEqual(),
-                            Equal.<Accessibilite>anyEqual(),
+                            Equal.<Activation>anyEqual(),
                             Equal.<LdapGroup>anyEqual(),
-                            Equal.listEqual(Equal.<Domaine>anyEqual())
+                            Equal.listEqual(Equal.<Domain>anyEqual())
                     )).comap(new F<Application,
-                    P2<P4<Version, Code, Titre, Libelle>,
-                            P5<Description, URL, Accessibilite, LdapGroup, List<Domaine>>>>() {
-                public P2<P4<Version, Code, Titre, Libelle>,
-                        P5<Description, URL, Accessibilite, LdapGroup, List<Domaine>>> f(Application application) {
+                    P2<P4<Code, Title, Caption, Description>,
+                            P4<URL, Activation, LdapGroup, List<Domain>>>>() {
+                public P2<P4<Code, Title, Caption, Description>,
+                        P4<URL, Activation, LdapGroup, List<Domain>>> f(Application application) {
                     return p(
-                            p(application.version(),
-                                    application.code(),
-                                    application.titre(),
-                                    application.libelle()),
-                            p(application.description(),
-                                    application.url(),
-                                    application.accessibilite(),
-                                    application.groupe(),
-                                    application.domaines()));
+                            p(application.code(),
+                                    application.title(),
+                                    application.caption(),
+                                    application.description()),
+                            p(application.url(),
+                                    application.activation(),
+                                    application.group(),
+                                    application.domains()));
                 }
             });
 
-    public static final Equal<Domaine> domaineCompleteEq =
-            Equal.p6Equal(
-                    Equal.<Version>anyEqual(),
+    public static final Equal<Domain> domaineCompleteEq =
+            Equal.p5Equal(
                     Equal.<Code>anyEqual(),
-                    Equal.<Libelle>anyEqual(),
+                    Equal.<Caption>anyEqual(),
                     Equal.optionEqual(Equals.domaineCompleteEq),
-                    Equal.listEqual(Equal.<Domaine>anyEqual()),
+                    Equal.listEqual(Equal.<Domain>anyEqual()),
                     Equal.listEqual(Equal.<Application>anyEqual()))
-            .comap(new F<Domaine, P6<Version, Code, Libelle, Option<Domaine>, List<Domaine>, List<Application>>>() {
-                public P6<Version, Code, Libelle, Option<Domaine>, List<Domaine>, List<Application>> f(Domaine domaine) {
-                    return p(domaine.version(),
-                            domaine.code(),
-                            domaine.libelle(),
-                            domaine.parent(),
-                            domaine.domaines(),
-                            domaine.applications());
+            .comap(new F<Domain, P5<Code, Caption, Option<Domain>, List<Domain>, List<Application>>>() {
+                public P5<Code, Caption, Option<Domain>, List<Domain>, List<Application>> f(Domain domain) {
+                    return p(domain.code(),
+                            domain.caption(),
+                            domain.parent(),
+                            domain.domains(),
+                            domain.applications());
                 }
             });
 

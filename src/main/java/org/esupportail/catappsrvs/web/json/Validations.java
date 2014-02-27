@@ -1,4 +1,4 @@
-package org.esupportail.catappsrvs.web.dto;
+package org.esupportail.catappsrvs.web.json;
 
 import fj.F;
 import fj.Function;
@@ -12,7 +12,6 @@ import static fj.data.Option.fromNull;
 import static fj.data.Option.fromString;
 import static fj.data.Validation.success;
 import static fj.data.Validation.validation;
-import static org.esupportail.catappsrvs.web.dto.JsApp.Acces;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Validations {
@@ -34,8 +33,8 @@ public final class Validations {
     }
 
     public static Validation<String, String> validTitre(String titre) {
-        return validNotNull("titre", titre)
-                .apply(validNotEmpty("titre", titre).map(Function.<String, String>constant()));
+        return validNotNull("title", titre)
+                .apply(validNotEmpty("title", titre).map(Function.<String, String>constant()));
     }
 
     public static Validation<String, String> validLibelle(String libelle) {
@@ -47,13 +46,13 @@ public final class Validations {
                 .apply(validNotEmpty("url", url).map(Function.<String, String>constant()));
     }
 
-    public static Validation<String, Acces> validAccess(Acces access) {
-        return validNotNull("accessibilite", access)
-                .bind(new F<Acces, Validation<String, Acces>>() {
-                    public Validation<String, Acces> f(Acces acces) {
-                        return validNotEmpty("accessibilite", acces.name()).map(new F<String, Acces>() {
-                            public Acces f(String s) {
-                                return Acces.valueOf(s);
+    public static Validation<String, JsApp.JsActivation> validAccess(JsApp.JsActivation access) {
+        return validNotNull("activation", access)
+                .bind(new F<JsApp.JsActivation, Validation<String, JsApp.JsActivation>>() {
+                    public Validation<String, JsApp.JsActivation> f(JsApp.JsActivation activ) {
+                        return validNotEmpty("activation", activ.name()).map(new F<String, JsApp.JsActivation>() {
+                            public JsApp.JsActivation f(String s) {
+                                return JsApp.JsActivation.valueOf(s);
                             }
                         });
                     }
@@ -65,8 +64,8 @@ public final class Validations {
     }
 
     public static Validation<String, String> validGroupe(String groupe) {
-        return validNotNull("groupe", groupe)
-                .apply(validNotEmpty("groupe", groupe).map(Function.<String, String>constant()));
+        return validNotNull("group", groupe)
+                .apply(validNotEmpty("group", groupe).map(Function.<String, String>constant()));
     }
 
     public static Validation<String, String[]> validDomaines(String[] domaines) {
