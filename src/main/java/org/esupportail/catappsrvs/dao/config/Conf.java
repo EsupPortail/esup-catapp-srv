@@ -32,9 +32,6 @@ class Conf {
     @Value("${jpa.database.type}")
     private String databaseType;
 
-    @Value("${hibernate.hbm2ddl.auto:validate}")
-    private String hbm2ddlAuto;
-
     @Value("${hibernate.show_sql}")
     private boolean showSql;
 
@@ -83,7 +80,6 @@ class Conf {
         props.put("hibernate.format_sql", formatSql);
         props.put("hibernate.use_sql_comments", useSqlComments);
         props.put("hibernate.temp.use_jdbc_metadata_defaults", false);
-        props.put("hibernate.hbm2ddl.auto", hbm2ddlAuto);
         return props;
     }
 
@@ -135,7 +131,7 @@ class Conf {
         }
     }
 
-    //@Bean @Profile({"TUTU", "!TEST"})
+    @Bean
     public SpringLiquibase liquibase() throws LiquibaseException {
         final SpringLiquibase liquibase = new SpringLiquibase();
         liquibase.setDataSource(dataSource);

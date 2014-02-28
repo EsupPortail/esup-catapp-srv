@@ -30,7 +30,7 @@ public final class Functions {
         }
     };
 
-    public static F<NonEmptyList<Exception>, Response> treatErrors(final String msg) {
+    public static F<NonEmptyList<Exception>, Response> errorResponse(final String msg) {
         return new F<NonEmptyList<Exception>, Response>() {
             public Response f(NonEmptyList<Exception> exceptions) {
                 for (Exception e : exceptions)

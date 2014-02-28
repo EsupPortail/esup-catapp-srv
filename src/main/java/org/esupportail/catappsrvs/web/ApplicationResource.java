@@ -3,6 +3,7 @@ package org.esupportail.catappsrvs.web;
 import fj.F;
 import fj.F2;
 import fj.F8;
+import fj.P1;
 import fj.data.List;
 import fj.data.NonEmptyList;
 import fj.data.Validation;
@@ -29,6 +30,7 @@ import static fj.data.Validation.success;
 import static javax.ws.rs.core.Response.ResponseBuilder;
 import static org.esupportail.catappsrvs.model.CommonTypes.Caption.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Title.*;
+import static org.esupportail.catappsrvs.utils.logging.Log.Debug;
 import static org.esupportail.catappsrvs.web.json.Conversions.*;
 import static org.esupportail.catappsrvs.web.json.Validations.*;
 import static org.esupportail.catappsrvs.web.utils.Functions.arrayToList;
@@ -81,7 +83,7 @@ public final class ApplicationResource extends CrudResource<Application, IApplic
                                             "dom:" + code);
                                 }
                             },
-                            Response.ok(applicationToDTO(app)));
+                            Response.ok(applicationToJson(app)));
             return success(domsBuilder.build());
         } catch (Exception e) {
             return fail(e);
@@ -101,27 +103,35 @@ public final class ApplicationResource extends CrudResource<Application, IApplic
 
     private final F8<List<String>, String, String, JsApp.JsActivation, URL, String, String, String, Application> buildApp =
             new F8<List<String>, String, String, JsApp.JsActivation, URL, String, String, String, Application>() {
-                public Application f(List<String> doms, String grp, String descr, JsApp.JsActivation activ, URL url, String lib, String titre, String code) {
-                    return Application.application(
-                            code(code),
-                            title(titre),
-                            caption(lib),
-                            description(descr),
-                            url,
-                            Activation.valueOf(activ.name()),
-                            ldapGroup(grp),
-                            doms.map(domWithCode));
+                public Application f(final List<String> doms, final String grp, final String descr, final JsApp.JsActivation activ, final URL url, final String lib, final String titre, final String code) {
+                    return Debug._(this, "buildApp", doms, grp, descr, activ, url, lib, titre, code).log(new P1<Application>() {
+                        public Application _1() {
+                            return Application.application(
+                                    code(code),
+                                    title(titre),
+                                    caption(lib),
+                                    description(descr),
+                                    url,
+                                    Activation.valueOf(activ.name()),
+                                    ldapGroup(grp),
+                                    doms.map(domWithCode));
+                        }
+                    });
                 }
             };
 
     private final F<String,Validation<NonEmptyList<String>,URL>> buildUrl =
             new F<String, Validation<NonEmptyList<String>, URL>>() {
-                public Validation<NonEmptyList<String>, URL> f(String url) {
-                    try {
-                        return success(new URL(url));
-                    } catch (Exception e) {
-                        return failNEL(e.getMessage());
-                    }
+                public Validation<NonEmptyList<String>, URL> f(final String url) {
+                    return Debug._(this, "buildUrl", url).log(new P1<Validation<NonEmptyList<String>, URL>>() {
+                        public Validation<NonEmptyList<String>, URL> _1() {
+                            try {
+                                return success(new URL(url));
+                            } catch (Exception e) {
+                                return failNEL(e.getMessage());
+                            }
+                        }
+                    });
                 }
             };
 }

@@ -5,18 +5,24 @@ import fj.data.*;
 import org.esupportail.catappsrvs.model.Application;
 import org.esupportail.catappsrvs.model.Domain;
 import org.esupportail.catappsrvs.model.QDomain;
+import org.esupportail.catappsrvs.model.utils.Shows;
+import org.esupportail.catappsrvs.utils.logging.Log;
 
 import javax.persistence.EntityManager;
 
 import static fj.Function.curry;
 import static fj.P.p;
+import static fj.Unit.unit;
 import static fj.data.$._;
 import static fj.data.Either.left;
 import static fj.data.Either.right;
 import static fj.data.Option.some;
 import static fj.data.Stream.iterableStream;
+import static java.lang.String.format;
 import static org.esupportail.catappsrvs.model.CommonTypes.Code;
 import static org.esupportail.catappsrvs.model.CommonTypes.LdapGroup;
+import static org.esupportail.catappsrvs.model.utils.Shows.shortDomainShow;
+import static org.esupportail.catappsrvs.utils.logging.Log.Debug;
 
 public final class DomainDao extends CrudDao<Domain> implements IDomainDao {
     private final P1<ICrudDao<Application>> appDao;
@@ -50,12 +56,6 @@ public final class DomainDao extends CrudDao<Domain> implements IDomainDao {
                 domain.domains().map(new F<Domain, Either<Exception, Domain>>() {
                     public Either<Exception, Domain> f(Domain dom) {
                         return read(dom.code());
-//                                .right()
-//                                .map(new F<Domain, Domain>() {
-//                                    public Domain f(Domain dm) {
-//                                        return dm.withParent(some(domain));
-//                                    }
-//                                });
                     }
                 });
 
@@ -80,21 +80,6 @@ public final class DomainDao extends CrudDao<Domain> implements IDomainDao {
                                         .withDomains(ssdoms);
                             }
                         }))));
-    }
-
-    @Override
-    Either<Exception, Domain> reload(final Domain domain) {
-        final Either<Exception, Domain> reloaded = read(domain.code());
-        return reloaded.right().map(new F<Domain, Domain>() {
-            public Domain f(Domain dom) {
-                return dom
-                        .withCode(domain.code())
-                        .withCaption(domain.caption())
-                        .withParent(domain.parent())
-                        .withDomains(domain.domains())
-                        .withApplications(domain.applications());
-            }
-        });
     }
 
     @Override
@@ -255,7 +240,7 @@ public final class DomainDao extends CrudDao<Domain> implements IDomainDao {
 
         final Either<Exception, Tree<Domain>> appsFilteredTree = sequenceRightTree(treeFunc.f(read(code)));
 
-        return appsFilteredTree.right().map(new F<Tree<Domain>, Tree<Option<Domain>>>() {
+        final Either<Exception, Tree<Option<Domain>>> result = appsFilteredTree.right().map(new F<Tree<Domain>, Tree<Option<Domain>>>() {
             public Tree<Option<Domain>> f(Tree<Domain> tdoms) {
                 return Tree.bottomUp(tdoms, new F<P2<Domain, Stream<Option<Domain>>>, Option<Domain>>() {
                     public Option<Domain> f(P2<Domain, Stream<Option<Domain>>> pair) {
@@ -273,6 +258,18 @@ public final class DomainDao extends CrudDao<Domain> implements IDomainDao {
                 });
             }
         });
+
+        Debug._(this, "findDomaines", code, groups).effect(new P1<String>() {
+            public String _1() {
+                return "\n" +
+                        result.either(
+                                _("").<Exception>constant(),
+                                Tree.show2D(Show.optionShow(shortDomainShow)).showS_()) +
+                        "\n";
+            }
+        });
+
+        return result;
     }
 
     private static <B, X> Either<X, Tree<B>> sequenceRightTree(final Tree<Either<X, B>> tree) {

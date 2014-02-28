@@ -131,11 +131,6 @@ public final class ApplicationDao extends CrudDao<Application> implements IAppli
     }
 
     @Override
-    Either<Exception, Application> reload(Application application) {
-        return null;
-    }
-
-    @Override
     protected Either<Exception, Application> refine(Application application) {
         return right(application.withDomains(application.domains())); // force le chargement (hibernate)
     }

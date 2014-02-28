@@ -91,7 +91,7 @@ public class TestDaos {
     @Before
     public void setUp() throws DatabaseUnitException, SQLException {
         final IDataSet dataSet = new DefaultDataSet(new DefaultTable[] {
-                new DefaultTable("domain", new Column[]{
+                new DefaultTable("DOMAIN", new Column[]{
                         new Column("pk", BIGINT),
                         new Column("code", VARCHAR),
                         new Column("caption", VARCHAR),
@@ -99,7 +99,7 @@ public class TestDaos {
                 }){{
                     addRow(domaineToRow(1L, firstDom));
                 }},
-                new DefaultTable("application", new Column[]{
+                new DefaultTable("APPLICATION", new Column[]{
                         new Column("pk", BIGINT),
                         new Column("code", VARCHAR),
                         new Column("title", VARCHAR),
@@ -111,7 +111,7 @@ public class TestDaos {
                 }){{
                     addRow(applicationToRow(1L, firstApp));
                 }},
-                new DefaultTable("domain_application", new Column[]{
+                new DefaultTable("DOMAIN_APPLICATION", new Column[]{
                         new Column("domain_pk", BIGINT),
                         new Column("application_pk", BIGINT)
                 }){{

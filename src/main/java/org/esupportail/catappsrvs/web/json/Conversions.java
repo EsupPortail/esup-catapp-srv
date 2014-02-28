@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.esupportail.catappsrvs.model.Application;
 import org.esupportail.catappsrvs.model.Domain;
+import org.esupportail.catappsrvs.utils.logging.Log;
 
 import static org.esupportail.catappsrvs.model.Application.Activation.Activated;
 import static org.esupportail.catappsrvs.model.CommonTypes.Caption.*;
@@ -15,6 +16,10 @@ import static org.esupportail.catappsrvs.model.CommonTypes.Description.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.LdapGroup.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Title.*;
 import static org.esupportail.catappsrvs.model.Domain.*;
+import static org.esupportail.catappsrvs.utils.logging.Log.Debug;
+import static org.esupportail.catappsrvs.web.json.JsApp.JsActivation;
+import static org.esupportail.catappsrvs.web.json.JsApp.jsApp;
+import static org.esupportail.catappsrvs.web.json.JsDom.jsDom;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Conversions {
@@ -44,16 +49,20 @@ public final class Conversions {
         }
     };
 
-    public static JsApp applicationToDTO(Application app) {
-        return JsApp.jsApp(
-                app.code().value(),
-                app.title().value(),
-                app.caption().value(),
-                app.url().toString(),
-                JsApp.JsActivation.valueOf(app.activation().name()),
-                app.description().value(),
-                app.group().value(),
-                app.domains().map(domCode).array(String[].class));
+    public static JsApp applicationToJson(final Application app) {
+        return Debug._(Conversions.class.getName(), "applicationToJson", app).log(new P1<JsApp>() {
+            public JsApp _1() {
+                return jsApp(
+                        app.code().value(),
+                        app.title().value(),
+                        app.caption().value(),
+                        app.url().toString(),
+                        JsActivation.valueOf(app.activation().name()),
+                        app.description().value(),
+                        app.group().value(),
+                        app.domains().map(domCode).array(String[].class));
+            }
+        });
     }
 
     // ######## Domaines
@@ -65,11 +74,12 @@ public final class Conversions {
                     List.<Domain>nil(),
                     List.<Application>nil());
 
-    public static final F<String,Domain> domWithCode =new F<String, Domain>() {
-                        public Domain f(String code) {
-                            return emptyDom.withCode(code(code));
-                        }
-                    };
+    public static final F<String,Domain> domWithCode =
+            new F<String, Domain>() {
+                public Domain f(String code) {
+                    return emptyDom.withCode(code(code));
+                }
+            };
 
     public static final F<Domain,String> domCode = new F<Domain, String>() {
         public String f(Domain domain) {
@@ -83,13 +93,17 @@ public final class Conversions {
         }
     };
 
-    public static JsDom domaineToJson(Domain domain) {
-        return JsDom.jsDom(
-                domain.code().value(),
-                domain.caption().value(),
-                domain.parent().option("", domCode),
-                domain.domains().map(domCode).array(String[].class),
-                domain.applications().map(appCode).array(String[].class));
+    public static JsDom domaineToJson(final Domain domain) {
+        return Debug._(Conversions.class.getName(), "domaineToJson", domain).log(new P1<JsDom>() {
+            public JsDom _1() {
+                return jsDom(
+                        domain.code().value(),
+                        domain.caption().value(),
+                        domain.parent().option("", domCode),
+                        domain.domains().map(domCode).array(String[].class),
+                        domain.applications().map(appCode).array(String[].class));
+            }
+        });
     }
 
     // ########## Domaines (arborescent)

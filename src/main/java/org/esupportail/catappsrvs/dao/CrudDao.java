@@ -40,7 +40,6 @@ abstract class CrudDao<T extends HasCode<T>> implements ICrudDao<T> {
     }
 
     abstract Either<Exception, T> prepare(T t);
-    abstract Either<Exception, T> reload(T t);
     abstract Either<Exception, T> refine(T t);
 
     @Override

@@ -22,12 +22,16 @@ import static fj.data.Option.*;
 import static fj.data.Validation.*;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.ResponseBuilder;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.esupportail.catappsrvs.model.CommonTypes.Caption.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Code.*;
 import static org.esupportail.catappsrvs.model.Domain.*;
 import static org.esupportail.catappsrvs.model.User.Uid.*;
 import static org.esupportail.catappsrvs.model.User.*;
+import static org.esupportail.catappsrvs.utils.logging.Log.Debug;
+import static org.esupportail.catappsrvs.utils.logging.Log.Info;
 import static org.esupportail.catappsrvs.web.json.Conversions.*;
+import static org.esupportail.catappsrvs.web.json.JSDomTree.jsDomTree;
 import static org.esupportail.catappsrvs.web.json.Validations.*;
 import static org.esupportail.catappsrvs.web.utils.Functions.*;
 
@@ -47,84 +51,65 @@ public final class DomainResource extends CrudResource<Domain, IDomain, JsDom> {
     @GET
     @Path("{code}/tree")
     @Produces(APPLICATION_JSON)
-    public final Response findDomaines(@PathParam("code") String code,
-                                       @QueryParam("user") String uid) {
-        return validCode(code).nel()
-                .accumulate(
-                        Validations.sm,
-                        Validations.validNotEmpty("le paramètre user", uid).nel(),
-                        P.<String, String>p2())
-                .f().map(fieldsException).nel()
-                .bind(new F<P2<String, String>, Validation<NonEmptyList<Exception>, Response>>() {
-                    public Validation<NonEmptyList<Exception>, Response> f(P2<String, String> pair) {
-                        return validation(srv.findDomaines(code(pair._1()), user(uid(pair._2())))).nel()
-                                .map(new F<Tree<Option<Domain>>, Response>() {
-                                    public Response f(Tree<Option<Domain>> domaines) {
-                                        final Tree<Option<JsDom>> doms = domaines.fmap(domaineToJson.mapOption());
-                                        final Tree<Option<JSDomTree>> domTree =
-                                                doms.fmap(new F<Option<JsDom>, Option<JSDomTree>>() {
-                                                    public Option<JSDomTree> f(Option<JsDom> opt) {
-                                                        return opt.map(new F<JsDom, JSDomTree>() {
-                                                            public JSDomTree f(JsDom jsDom) {
-                                                                return JSDomTree.jsDomTree(jsDom, new JSDomTree[0]);
-                                                            }
-                                                        });
-                                                    }
-                                                });
-                                        final Stream<Stream<Option<JSDomTree>>> levels = domTree.levels();
+    public final Response findDomaines(@PathParam("code") final String code,
+                                       @QueryParam("user") final String uid) {
+        return Info._(this, "findDomaines", code, uid).log(new P1<Response>() {
+            public Response _1() {
+                return validCode(code).nel()
+                        .accumulate(sm,
+                                validNotEmpty("le paramètre user", uid).nel(),
+                                P.<String, String>p2())
+                        .f().map(fieldsException).nel()
+                        .bind(new F<P2<String, String>, Validation<NonEmptyList<Exception>, Response>>() {
+                            public Validation<NonEmptyList<Exception>, Response> f(P2<String, String> pair) {
+                                return validation(srv.findDomaines(code(pair._1()), user(uid(pair._2())))).nel()
+                                        .map(new F<Tree<Option<Domain>>, Response>() {
+                                            public Response f(Tree<Option<Domain>> domainesTree) {
+                                                final Tree<Option<JSDomTree>> jsTree = domainesTree
+                                                        .fmap(domaineToJson
+                                                                .andThen(new F<JsDom, JSDomTree>() {
+                                                                    public JSDomTree f(JsDom jsDom) {
+                                                                        return jsDomTree(jsDom, new JSDomTree[0]);
+                                                                    }
+                                                                })
+                                                                .mapOption());
 
-                                        final Stream<Stream<Option<JSDomTree>>> trees = levels.length() == 1
-                                                ? Stream.single(Stream.single(domTree.root()))
-                                                : levels.zipWith(levels.tail()._1(), new F2<Stream<Option<JSDomTree>>, Stream<Option<JSDomTree>>, Stream<Option<JSDomTree>>>() {
-                                                    public Stream<Option<JSDomTree>> f(Stream<Option<JSDomTree>> level1, final Stream<Option<JSDomTree>> level2) {
-                                                        return level1.map(new F<Option<JSDomTree>, Option<JSDomTree>>() {
-                                                            public Option<JSDomTree> f(final Option<JSDomTree> opt) {
-                                                                final JSDomTree[] subDomains =
-                                                                        somes(level2)
-                                                                                .filter(new F<JSDomTree, Boolean>() {
-                                                                                    public Boolean f(final JSDomTree child) {
-                                                                                        return opt.exists(new F<JSDomTree, Boolean>() {
-                                                                                            public Boolean f(JSDomTree parent) {
-                                                                                                return parent.domain().code()
-                                                                                                        .equals(child.domain().parent());
-                                                                                            }
-                                                                                        });
-                                                                                    }
-                                                                                })
-                                                                                .array(JSDomTree[].class);
-                                                                return opt.map(new F<JSDomTree, JSDomTree>() {
+                                                final Option<JSDomTree> result =
+                                                        Tree.bottomUp(jsTree, new F<P2<Option<JSDomTree>, Stream<Option<JSDomTree>>>, Option<JSDomTree>>() {
+                                                            public Option<JSDomTree> f(P2<Option<JSDomTree>, Stream<Option<JSDomTree>>> pair) {
+                                                                final Option<JSDomTree> parent = pair._1();
+                                                                final Stream<Option<JSDomTree>> children = pair._2();
+                                                                return parent.map(new F<JSDomTree, JSDomTree>() {
                                                                     public JSDomTree f(JSDomTree jsDomTree) {
-                                                                        return jsDomTree.withSubDomains(subDomains);
+                                                                        return jsDomTree
+                                                                                .withSubDomains(somes(children).array(JSDomTree[].class));
                                                                     }
                                                                 });
                                                             }
-                                                        });
-                                                    }
-                                                });
+                                                        }).root();
 
-                                        final Option<JSDomTree> result =
-                                                trees.foldLeft(
-                                                        new F2<Option<JSDomTree>, Stream<Option<JSDomTree>>, Option<JSDomTree>>() {
-                                                            public Option<JSDomTree> f(Option<JSDomTree> acc, final Stream<Option<JSDomTree>> level) {
-                                                                return acc.bind(new F<JSDomTree, Option<JSDomTree>>() {
-                                                                    public Option<JSDomTree> f(JSDomTree jsDomTree) {
-                                                                        return jsDomTree.equals(emptyJsDomTree)
-                                                                                ? level.head()
-                                                                                : some(jsDomTree.withSubDomains(somes(level).array(JSDomTree[].class)));
-                                                                    }
-                                                                });
+                                                return result.option(
+                                                        new P1<Response>() {
+                                                            public Response _1() {
+                                                                return Response.status(NOT_FOUND).build();
                                                             }
                                                         },
-                                                        some(emptyJsDomTree));
+                                                        new F<JSDomTree, Response>() {
+                                                            public Response f(JSDomTree jsDomTree) {
+                                                                return Response.ok(jsDomTree).build();
+                                                            }
+                                                        }
+                                                );
+                                            }
+                                        });
+                            }
+                        })
+                        .validation(
+                                errorResponse("Erreur de lecture d'un arbre d'entités"),
+                                Function.<Response>identity());
 
-                                        return Response.ok(result.orSome(emptyJsDomTree)).build();
-                                    }
-                                });
-                    }
-                })
-                .validation(
-                        treatErrors("Erreur de lecture d'un arbre d'entités"),
-                        Function.<Response>identity());
+            }
+        });
     }
 
 
@@ -190,13 +175,17 @@ public final class DomainResource extends CrudResource<Domain, IDomain, JsDom> {
 
     private final F6<Integer, String, String, String, List<String>, List<String>, Domain> buildDomain =
             new F6<Integer, String, String, String, List<String>, List<String>, Domain>() {
-                public Domain f(Integer ver, String code, String lib, String parent, List<String> ssdoms, List<String> apps) {
-                    return domain(
-                            code(code),
-                            caption(lib),
-                            fromString(parent).map(domWithCode),
-                            ssdoms.map(domWithCode),
-                            apps.map(appWithCode));
+                public Domain f(Integer ver, final String code, final String lib, final String parent, final List<String> ssdoms, final List<String> apps) {
+                    return Debug._(this, "buildDomain", ver, code, lib, parent, ssdoms, apps).log(new P1<Domain>() {
+                        public Domain _1() {
+                            return domain(
+                                    code(code),
+                                    caption(lib),
+                                    fromString(parent).map(domWithCode),
+                                    ssdoms.map(domWithCode),
+                                    apps.map(appWithCode));
+                        }
+                    });
                 }
             };
 
