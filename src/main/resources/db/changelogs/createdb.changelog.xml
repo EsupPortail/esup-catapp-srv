@@ -51,4 +51,95 @@
     <changeSet author="GENERATED" id="1392822241469-8">
         <addUniqueConstraint columnNames="code, version" constraintName="UK_6v2p9cedgvca14uh7i2jgucqo" deferrable="false" disabled="false" initiallyDeferred="false" tableName="Domaine"/>
     </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-1">
+        <createTable tableName="Domain">
+            <column autoIncrement="true" name="pk" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="DomainPK"/>
+            </column>
+            <column name="caption" type="VARCHAR(255)"/>
+            <column name="code" type="VARCHAR(255)"/>
+            <column name="parent_pk" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-2">
+        <createTable tableName="Domain_Application">
+            <column name="domain_pk" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="application_pk" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-3">
+        <addColumn tableName="Application">
+            <column name="activation" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-4">
+        <addColumn tableName="Application">
+            <column name="caption" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-5">
+        <addColumn tableName="Application">
+            <column name="ldapgroup" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-6">
+        <addColumn tableName="Application">
+            <column name="title" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-7">
+        <addForeignKeyConstraint baseColumnNames="domain_pk" baseTableName="Domain_Application" constraintName="FK_f332w9xefsilx2bpg8til3jt7" deferrable="false" initiallyDeferred="false" referencedColumnNames="pk" referencedTableName="Domain"/>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-8">
+        <addForeignKeyConstraint baseColumnNames="parent_pk" baseTableName="Domain" constraintName="FK_gf1gmqf6255v68ah85q3ruf8f" deferrable="false" initiallyDeferred="false" referencedColumnNames="pk" referencedTableName="Domain"/>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-9">
+        <addForeignKeyConstraint baseColumnNames="application_pk" baseTableName="Domain_Application" constraintName="FK_japkwggfbk8ignko5vp7os17m" deferrable="false" initiallyDeferred="false" referencedColumnNames="pk" referencedTableName="Application"/>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-10">
+        <addUniqueConstraint columnNames="code" constraintName="UC_APPLICATION_CODE" deferrable="false" disabled="false" initiallyDeferred="false" tableName="Application"/>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-11">
+        <addUniqueConstraint columnNames="code" constraintName="UC_DOMAIN_CODE" deferrable="false" disabled="false" initiallyDeferred="false" tableName="Domain"/>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-12">
+        <dropForeignKeyConstraint baseTableName="DOMAINE_APPLICATION" constraintName="FK_988knloafmhbajqjfbvpwohmq"/>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-13">
+        <dropForeignKeyConstraint baseTableName="Domaine" constraintName="FK_deeet6h2ktw7ehx75m11donn0"/>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-14">
+        <dropForeignKeyConstraint baseTableName="DOMAINE_APPLICATION" constraintName="FK_r8fjw4b5y4x18oxnm0c04xiha"/>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-15">
+        <dropUniqueConstraint constraintName="UK_30ct4nkubs0bkhdg6io7bwirn" tableName="Application"/>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-16">
+        <dropUniqueConstraint constraintName="UK_6v2p9cedgvca14uh7i2jgucqo" tableName="Domaine"/>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-17">
+        <dropTable tableName="DOMAINE_APPLICATION"/>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-18">
+        <dropTable tableName="Domaine"/>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-19">
+        <dropColumn columnName="accessibilite" tableName="Application"/>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-20">
+        <dropColumn columnName="groupe" tableName="Application"/>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-21">
+        <dropColumn columnName="libelle" tableName="Application"/>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-22">
+        <dropColumn columnName="titre" tableName="Application"/>
+    </changeSet>
+    <changeSet author="gneuvill (generated)" id="1393611054072-23">
+        <dropColumn columnName="version" tableName="Application"/>
+    </changeSet>
 </databaseChangeLog>
