@@ -8,7 +8,6 @@ import org.esupportail.catappsrvs.model.Domain;
 import org.esupportail.catappsrvs.services.IDomain;
 import org.esupportail.catappsrvs.web.json.JSDomTree;
 import org.esupportail.catappsrvs.web.json.JsDom;
-import org.esupportail.catappsrvs.web.json.Validations;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
@@ -162,12 +161,12 @@ public final class DomainResource extends CrudResource<Domain, IDomain, JsDom> {
     }
 
     @Override
-    protected Validation<Exception, Domain> validAndBuild(JsDom domaine) {
-        return validApplications(domaine.applications()).map(arrayToList).nel()
-                .accumapply(sm, validDomaines(domaine.domains()).map(arrayToList).nel()
-                        .accumapply(sm, validParent(domaine.parent()).nel()
-                                .accumapply(sm, validLibelle(domaine.caption()).nel()
-                                        .accumapply(sm, validCode(domaine.code()).nel()
+    protected Validation<Exception, Domain> validAndBuild(JsDom json) {
+        return validApplications(json.applications()).map(arrayToList).nel()
+                .accumapply(sm, validDomaines(json.domains()).map(arrayToList).nel()
+                        .accumapply(sm, validParent(json.parent()).nel()
+                                .accumapply(sm, validLibelle(json.caption()).nel()
+                                        .accumapply(sm, validCode(json.code()).nel()
                                                 .accumapply(sm, Validation.<String, Integer>success(-1).nel()
                                                         .map(curry(buildDomain)))))))
                 .f().map(fieldsException);

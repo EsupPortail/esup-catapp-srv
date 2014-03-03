@@ -4,7 +4,6 @@ import fj.*;
 import fj.data.*;
 import fj.data.List;
 import org.esupportail.catappsrvs.services.ICrud;
-import org.esupportail.catappsrvs.utils.logging.Log;
 import org.esupportail.catappsrvs.web.json.JsHasCode;
 import org.esupportail.catappsrvs.web.utils.Functions;
 
@@ -26,7 +25,7 @@ import static org.esupportail.catappsrvs.web.utils.Functions.fieldsException;
 import static org.esupportail.catappsrvs.web.utils.Functions.errorResponse;
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
-public abstract class CrudResource<T, S extends ICrud<T>, D extends JsHasCode<T>> {
+public abstract class CrudResource<T, S extends ICrud<T>, J extends JsHasCode<T>> {
     protected final S srv;
 
     protected CrudResource(S srv) { this.srv = srv; }
@@ -66,7 +65,7 @@ public abstract class CrudResource<T, S extends ICrud<T>, D extends JsHasCode<T>
     @POST
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    public final Response create(final D dto, @Context final UriInfo uriInfo) {
+    public final Response create(final J dto, @Context final UriInfo uriInfo) {
         return Info._(this, "create", dto, uriInfo).log(new P1<Response>() {
             public Response _1() {
                 return validAndBuild(dto).nel()
@@ -169,14 +168,14 @@ public abstract class CrudResource<T, S extends ICrud<T>, D extends JsHasCode<T>
     @PUT @Path("{code}")
     @Consumes(APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public final Response update(@PathParam("code") final String code, final D dto) {
-        return Info._(this, "update", code, dto).log(new P1<Response>() {
+    public final Response update(@PathParam("code") final String code, final J json) {
+        return Info._(this, "update", code, json).log(new P1<Response>() {
             public Response _1() {
                 return validCode(code).nel()
                         .f().map(Functions.fieldsException).nel()
                         .bind(new F<String, Validation<NonEmptyList<Exception>, Response>>() {
                             public Validation<NonEmptyList<Exception>, Response> f(String validCode) {
-                                return validAndBuild(dto.<D>withCode(validCode)).nel()
+                                return validAndBuild(json.<J>withCode(validCode)).nel()
                                         .bind(new F<T, Validation<NonEmptyList<Exception>, Response>>() {
                                             public Validation<NonEmptyList<Exception>, Response> f(T validT) {
                                                 return validation(srv.update(validT)).nel()
@@ -217,7 +216,7 @@ public abstract class CrudResource<T, S extends ICrud<T>, D extends JsHasCode<T>
     }
 
 
-    protected abstract Validation<Exception, T> validAndBuild(D dto);
+    protected abstract Validation<Exception, T> validAndBuild(J json);
 
     protected abstract Validation<Exception, Response> createResp(T T, UriInfo uriInfo);
 

@@ -53,16 +53,16 @@ public final class ApplicationResource extends CrudResource<Application, IApplic
     }
 
     @Override
-    protected Validation<Exception, Application> validAndBuild(JsApp app) {
-        return validDomaines(app.domains()).map(arrayToList).nel()
+    protected Validation<Exception, Application> validAndBuild(JsApp json) {
+        return validDomaines(json.domains()).map(arrayToList).nel()
                 .accumulate(sm,
-                        validGroupe(app.group()).nel(),
-                        validDescr(app.description()).nel(),
-                        validAccess(app.activation()).nel(),
-                        validUrl(app.url()).nel().bind(buildUrl),
-                        validLibelle(app.caption()).nel(),
-                        validTitre(app.title()).nel(),
-                        validCode(app.code()).nel(),
+                        validGroupe(json.group()).nel(),
+                        validDescr(json.description()).nel(),
+                        validAccess(json.activation()).nel(),
+                        validUrl(json.url()).nel().bind(buildUrl),
+                        validLibelle(json.caption()).nel(),
+                        validTitre(json.title()).nel(),
+                        validCode(json.code()).nel(),
                         buildApp)
                 .f().map(Functions.fieldsException);
     }

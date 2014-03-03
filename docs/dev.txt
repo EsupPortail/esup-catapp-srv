@@ -1,12 +1,25 @@
 Commandes utiles :
 
 Installation des modules dans le repo maven local :
-mvn -Drules.location=$rulesFile clean install
+mvn -Dconfig.location=/chemin/vers/config.properties clean install
 
 Exec du war (en mode debug ou non) :
-cd catapp-web ; mvnDebug -Drules.location=$rulesFile jetty:run ; cd -
-cd catapp-web ; mvn -Drules.location=$rulesFile jetty:run ; cd -
+mvnDebug -Dconfig.location=/chemin/vers/config.properties jetty:run ; cd -
+mvn -Dconfig.location=/chemin/vers/config.properties jetty:run ; cd -
+
+Après modification du mapping JPA (note : un fichier liquibase.properties(1) doit exister dans le répertoire courant) :
+liquibase diffChangeLog
 
 Création d'une release :
-mvn release:prepare -Darguments="-Drules.location=$rulesFile -DgenerateDdl=true"
-mvn release:perform -Darguments="-Drules.location=$rulesFile -DgenerateDdl=true"
+mvn release:prepare -Darguments="-Dconfig.location=/chemin/vers/config.properties"
+mvn release:perform -Darguments="-Dconfig.location=/chemin/vers/config.properties"
+
+(1) : le fichier liquibase.properties doit contenir :
+classpath=doit lister l'ensemble des jars hibernate, spring, dom4j, dépendances éventuelles des entités JPA ainsi que le répertoire target/classes
+changeLogFile=chemin vers le changelog liquibase
+driver=driver java d'accès à la BDD
+url=url d'accès à la BDD
+username=identifiant d'accès à la BDD
+password=mot de passe d'accès à la BDD
+## pour le paramètre referenceUrl, cf. https://github.com/liquibase/liquibase-hibernate/wiki
+referenceUrl=hibernate:spring:monappli.monpackage?dialect=org.hibernate.dialect.(MySQL5Dialect|ou autre)
