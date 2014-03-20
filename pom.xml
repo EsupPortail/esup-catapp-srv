@@ -41,8 +41,8 @@
         </snapshotRepository>
     </distributionManagement>
     <scm>
-        <developerConnection>scm:git:ssh://git@github.com/EsupPortail/catapp-services</developerConnection>
-        <url>https://github.com/EsupPortail/catapp-services</url>
+        <developerConnection>scm:git:ssh://git@github.com/EsupPortail/esup-catapp-srv</developerConnection>
+        <url>https://github.com/EsupPortail/esup-catapp-srv</url>
     </scm>
     <build>
         <defaultGoal>install</defaultGoal>
