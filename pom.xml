@@ -428,12 +428,6 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.12.2</version>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
     <properties>
         <esupcommons.version>2.0.0-alpha3</esupcommons.version>
