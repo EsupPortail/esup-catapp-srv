@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.esupportail</groupId>
     <artifactId>catapp-services</artifactId>
-    <version>0.1.2</version>
+    <version>0.1.3-SNAPSHOT</version>
     <packaging>war</packaging>
     <description>Application catalog as a rest service</description>
     <repositories>
@@ -43,7 +43,7 @@
     <scm>
         <developerConnection>scm:git:ssh://git@github.com/EsupPortail/esup-catapp-srv</developerConnection>
         <url>https://github.com/EsupPortail/esup-catapp-srv</url>
-      <tag>0.1.2</tag>
+      <tag>HEAD</tag>
   </scm>
     <build>
         <defaultGoal>install</defaultGoal>
