@@ -7,7 +7,6 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.esupportail.catappsrvs.model.Application;
 import org.esupportail.catappsrvs.model.Domain;
-import org.esupportail.catappsrvs.utils.logging.Log;
 
 import static org.esupportail.catappsrvs.model.Application.Activation.Activated;
 import static org.esupportail.catappsrvs.model.CommonTypes.Caption.*;
