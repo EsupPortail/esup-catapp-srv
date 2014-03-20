@@ -148,11 +148,6 @@
                 <version>4.3.1.Final</version>
             </dependency>
             <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-envers</artifactId>
-                <version>4.3.1.Final</version>
-            </dependency>
-            <dependency>
                 <groupId>commons-dbcp</groupId>
                 <artifactId>commons-dbcp</artifactId>
                 <version>1.4</version>
@@ -316,10 +311,6 @@
             <artifactId>hibernate-entitymanager</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-envers</artifactId>
-        </dependency>
-        <dependency>
             <groupId>commons-dbcp</groupId>
             <artifactId>commons-dbcp</artifactId>
         </dependency>
@@ -412,6 +403,12 @@
         <dependency>
             <groupId>org.liquibase.ext</groupId>
             <artifactId>liquibase-hibernate4</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>hibernate-jpa-2.0-api</artifactId>
+                    <groupId>org.hibernate.javax.persistence</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.dbunit</groupId>
