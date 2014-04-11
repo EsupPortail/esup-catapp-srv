@@ -45,6 +45,7 @@
         </site>
     </distributionManagement>
     <scm>
+        <connection>scm:git:ssh://git@github.com/EsupPortail/esup-catapp-srv.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/EsupPortail/esup-catapp-srv</developerConnection>
         <url>https://github.com/EsupPortail/esup-catapp-srv</url>
       <tag>HEAD</tag>
