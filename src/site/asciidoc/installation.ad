@@ -1,5 +1,7 @@
 = esup-catapp-srv =
-
+:toc2:
+:toclevels: 5
+:toc-title: Sommaire
 
 
 
@@ -27,6 +29,7 @@ Il doit contenir les paramètres décrits ci-après :
 | jdbc.connexion.url| url de connexion à la BDD| 0.1.0| jdbc:mysql://localhost:3306/catapp
 | jdbc.connexion.username| identifiant de connexion à la BDD| 0.1.0| toto
 | jdbc.connection.password| mot de passe de connexion à la BDD| 0.1.0| titi
+| jndi.datasource| identifiant de la datasource JNDI utilisée | 0.1.0| jdbc/catappsrv
 | hibernate.show_sql (optionnel)| montrer les requêtes à la BDD dans les logs| 0.1.0| false
 | hibernate.format_sql (optionnel)| formattage du SQL dans les logs| 0.1.0| false
 | hibernate.use_sql_comments (optionnel)| utiliser des commentaires SQL dans les logs| 0.1.0| false
