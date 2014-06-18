@@ -40,7 +40,7 @@ public final class CommonTypes {
     @Embeddable @EqualsAndHashCode @ToString
     @RequiredArgsConstructor(staticName = "description")
     public static final class Description {
-        @Column(name = "description") private final String value;
+        @Column(name = "description", length = 5000) private final String value;
         private Description() { value = null; }
         public String value() { return value; }
     }
