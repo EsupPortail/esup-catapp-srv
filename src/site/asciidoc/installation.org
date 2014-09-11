@@ -35,4 +35,5 @@
 | ldap.username                          | identifiant de connexion au ldap                   |   0.1.0 | tata                               |
 | ldap.password                          | mot de passe de connexion au ldap                  |   0.1.0 | tutu                               |
 | ldap.baseDn                            | dn de base de connexion au ldap                    |   0.1.0 | ou=gens,dc=monuniv,dc=fr           |
+[ ldap.searchAttribute                   | attribut ldap indiquant les groupes du user        |   0.1.7 | memberOf                           |
   

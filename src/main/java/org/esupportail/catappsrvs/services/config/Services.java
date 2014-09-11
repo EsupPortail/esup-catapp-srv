@@ -52,9 +52,12 @@ public class Services {
         @Value("${ldap.baseDn}")
         private String baseDn;
 
+        @Value("${ldap.searchAttribute}")
+        private String searchAttribute;
+
         @Bean
         public ILdap ldapSrv() {
-            return LdapSrv.ldapSrv(baseDn, ldap());
+            return LdapSrv.ldapSrv(baseDn, searchAttribute, ldap());
         }
 
         private LDAPInterface ldap() {

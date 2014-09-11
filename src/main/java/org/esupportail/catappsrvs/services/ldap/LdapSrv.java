@@ -18,6 +18,7 @@ import static org.esupportail.catappsrvs.model.CommonTypes.LdapGroup.*;
 @Value(staticConstructor = "ldapSrv")
 public class LdapSrv implements ILdap {
     String baseDn;
+    String searchAttribute;
     LDAPInterface ldap;
 
     @Override
@@ -25,7 +26,7 @@ public class LdapSrv implements ILdap {
         final Filter uidFilter = Filter.createEqualityFilter("uid", user.uid.value);
         try {
             final SearchRequest request =
-                    new SearchRequest(baseDn, SearchScope.ONE, uidFilter, "memberOf");
+                    new SearchRequest(baseDn, SearchScope.ONE, uidFilter, searchAttribute);
             final java.util.List<SearchResultEntry> results =
                     ldap.search(request).getSearchEntries();
             return iif(!results.isEmpty(),
