@@ -51,6 +51,7 @@ public final class CommonTypes {
     public static final class LdapGroup {
         @Column(name = "ldapgroup") private final String value;
 
+        private LdapGroup() { value = null; } // hibernate
         private LdapGroup(String value) { this.value = value.toLowerCase(); }
         public static LdapGroup of(String value) {return new LdapGroup(value);}
 
