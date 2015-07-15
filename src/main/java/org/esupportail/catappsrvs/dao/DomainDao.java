@@ -215,7 +215,7 @@ public final class DomainDao extends CrudDao<Domain> implements IDomainDao {
                                         try {
                                             final List<Application> apps = dom.applications().filter(new F<Application, Boolean>() {
                                                 public Boolean f(Application app) {
-                                                    return groups.exists(Equal.<LdapGroup>anyEqual().eq(app.group()));
+                                                    return groups.exists(LdapGroup.eq.eq(app.group()));
                                                 }
                                             });
                                             final List<Domain> doms = dom.domains();
