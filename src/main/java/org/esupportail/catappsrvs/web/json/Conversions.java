@@ -6,13 +6,14 @@ import fj.data.Option;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.esupportail.catappsrvs.model.Application;
+import org.esupportail.catappsrvs.model.CommonTypes;
+import org.esupportail.catappsrvs.model.CommonTypes.LdapGroup;
 import org.esupportail.catappsrvs.model.Domain;
 
 import static org.esupportail.catappsrvs.model.Application.Activation.Activated;
 import static org.esupportail.catappsrvs.model.CommonTypes.Caption.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Code.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Description.*;
-import static org.esupportail.catappsrvs.model.CommonTypes.LdapGroup.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Title.*;
 import static org.esupportail.catappsrvs.model.Domain.*;
 import static org.esupportail.catappsrvs.utils.logging.Log.Debug;
@@ -33,7 +34,7 @@ public final class Conversions {
                     description(""),
                     null,
                     Activated,
-                    ldapGroup(""),
+                    LdapGroup.of(""),
                     List.<Domain>nil());
 
     public static final F<String, Application> appWithCode = new F<String, Application>() {

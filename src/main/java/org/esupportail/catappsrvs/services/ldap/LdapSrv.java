@@ -13,7 +13,6 @@ import static fj.data.Either.iif;
 import static fj.data.Either.left;
 import static fj.data.List.iterableList;
 import static org.esupportail.catappsrvs.model.CommonTypes.LdapGroup;
-import static org.esupportail.catappsrvs.model.CommonTypes.LdapGroup.*;
 
 @Value(staticConstructor = "ldapSrv")
 public class LdapSrv implements ILdap {
@@ -38,7 +37,7 @@ public class LdapSrv implements ILdap {
                                             return array(attribute.getValues())
                                                     .map(new F<String, LdapGroup>() {
                                                         public LdapGroup f(String s) {
-                                                            return ldapGroup(s);
+                                                            return LdapGroup.of(s);
                                                         }
                                                     })
                                                     .toList();

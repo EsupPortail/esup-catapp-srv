@@ -11,6 +11,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.esupportail.catappsrvs.model.Application;
+import org.esupportail.catappsrvs.model.CommonTypes;
+import org.esupportail.catappsrvs.model.CommonTypes.LdapGroup;
 import org.esupportail.catappsrvs.model.Domain;
 import org.esupportail.catappsrvs.services.IApplication;
 import org.esupportail.catappsrvs.web.json.JsApp;
@@ -37,7 +39,6 @@ import static org.esupportail.catappsrvs.web.utils.Functions.arrayToList;
 import static org.esupportail.catappsrvs.model.Application.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Code.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Description.*;
-import static org.esupportail.catappsrvs.model.CommonTypes.LdapGroup.*;
 
 @Slf4j @Getter(AccessLevel.NONE) // lombok
 @Path("applications") // jaxrs
@@ -113,7 +114,7 @@ public final class ApplicationResource extends CrudResource<Application, IApplic
                                     description(descr),
                                     url,
                                     Activation.valueOf(activ.name()),
-                                    ldapGroup(grp),
+                                    LdapGroup.of(grp),
                                     doms.map(domWithCode));
                         }
                     });

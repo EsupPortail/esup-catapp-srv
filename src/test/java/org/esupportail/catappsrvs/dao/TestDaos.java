@@ -14,6 +14,8 @@ import org.dbunit.dataset.DefaultTable;
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.operation.DatabaseOperation;
 import org.esupportail.catappsrvs.model.Application;
+import org.esupportail.catappsrvs.model.CommonTypes;
+import org.esupportail.catappsrvs.model.CommonTypes.LdapGroup;
 import org.esupportail.catappsrvs.model.Domain;
 import org.junit.After;
 import org.junit.Before;
@@ -46,7 +48,6 @@ import static org.esupportail.catappsrvs.model.Application.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Caption.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Code.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Description.*;
-import static org.esupportail.catappsrvs.model.CommonTypes.LdapGroup.*;
 import static org.esupportail.catappsrvs.model.CommonTypes.Title.*;
 import static org.esupportail.catappsrvs.model.Domain.*;
 import static org.esupportail.catappsrvs.model.utils.Equals.domaineCompleteEq;
@@ -78,7 +79,7 @@ public class TestDaos {
                     description(""),
                     buildUrl("http://toto.fr"),
                     Activated,
-                    ldapGroup("UR1:57SI"),
+                    LdapGroup.of("UR1:57SI"),
                     single(this.firstDom));
 
     private final Domain firstDom =

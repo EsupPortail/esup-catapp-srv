@@ -1,5 +1,7 @@
 package org.esupportail.catappsrvs.model;
 
+import fj.Equal;
+import fj.F;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -46,10 +48,18 @@ public final class CommonTypes {
     }
 
     @Embeddable @EqualsAndHashCode @ToString
-    @RequiredArgsConstructor(staticName = "ldapGroup")
     public static final class LdapGroup {
         @Column(name = "ldapgroup") private final String value;
-        private LdapGroup() { value = null; }
+
+        private LdapGroup(String value) { this.value = value.toLowerCase(); }
+        public static LdapGroup of(String value) {return new LdapGroup(value);}
+
         public String value() { return value; }
+
+        public static Equal<LdapGroup> eq = Equal.stringEqual.comap(new F<LdapGroup, String>() {
+            public String f(LdapGroup ldapGroup) {
+                return ldapGroup.value();
+            }
+        });
     }
 }
