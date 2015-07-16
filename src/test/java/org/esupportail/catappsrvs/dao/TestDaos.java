@@ -1,6 +1,5 @@
 package org.esupportail.catappsrvs.dao;
 
-import fj.F;
 import fj.P2;
 import fj.data.Either;
 import fj.data.List;
@@ -24,10 +23,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.inject.Inject;
@@ -45,7 +42,6 @@ import static org.dbunit.dataset.datatype.DataType.BIGINT;
 import static org.dbunit.dataset.datatype.DataType.VARCHAR;
 import static org.esupportail.catappsrvs.dao.utils.Equals.domaineCompleteEq;
 import static org.esupportail.catappsrvs.model.Application.Activation.Activated;
-import static org.esupportail.catappsrvs.model.Application.of;
 import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
@@ -67,51 +63,51 @@ public class TestDaos {
     IDatabaseConnection dbunitConn;
 
     private final Application firstApp =
-            of(Code.of("APP1"),
-               Title.of("Application 1"),
-               Caption.of("L'appli 1"),
-               Description.of(""),
-               buildUrl("http://toto.fr"),
-               Activated,
-               LdapGroup.of("UR1:57SI"),
-               single(this.firstDom));
+        Application.of(Code.of("APP1"),
+                       Title.of("Application 1"),
+                       Caption.of("L'appli 1"),
+                       Description.of(""),
+                       buildUrl("http://toto.fr"),
+                       Activated,
+                       LdapGroup.of("UR1:57SI"),
+                       single(this.firstDom));
 
     private final Domain firstDom =
-            Domain.of(Code.of("DOM1"),
-                      Caption.of("Domain 1"),
-                      Option.<Domain>some(null),
-                      List.<Domain>nil(),
-                      single(firstApp));
+        Domain.of(Code.of("DOM1"),
+                  Caption.of("Domain 1"),
+                  Option.<Domain>some(null),
+                  List.<Domain>nil(),
+                  single(firstApp));
 
     @Before
     public void setUp() throws DatabaseUnitException, SQLException {
         final IDataSet dataSet = new DefaultDataSet(new DefaultTable[] {
-                new DefaultTable("DOMAIN", new Column[]{
-                        new Column("pk", BIGINT),
-                        new Column("code", VARCHAR),
-                        new Column("caption", VARCHAR),
-                        new Column("parent_pk", BIGINT)
-                }){{
-                    addRow(domaineToRow(1L, firstDom));
-                }},
-                new DefaultTable("APPLICATION", new Column[]{
-                        new Column("pk", BIGINT),
-                        new Column("code", VARCHAR),
-                        new Column("title", VARCHAR),
-                        new Column("caption", VARCHAR),
-                        new Column("description", VARCHAR),
-                        new Column("url", VARCHAR),
-                        new Column("activation", VARCHAR),
-                        new Column("ldapgroup", VARCHAR),
-                }){{
-                    addRow(applicationToRow(1L, firstApp));
-                }},
-                new DefaultTable("DOMAIN_APPLICATION", new Column[]{
-                        new Column("domain_pk", BIGINT),
-                        new Column("application_pk", BIGINT)
-                }){{
-                    addRow(new Object[] {1L, 1L});
-                }}
+            new DefaultTable("DOMAIN", new Column[]{
+                new Column("pk", BIGINT),
+                new Column("code", VARCHAR),
+                new Column("caption", VARCHAR),
+                new Column("parent_pk", BIGINT)
+            }){{
+                addRow(domaineToRow(1L, firstDom));
+            }},
+            new DefaultTable("APPLICATION", new Column[]{
+                new Column("pk", BIGINT),
+                new Column("code", VARCHAR),
+                new Column("title", VARCHAR),
+                new Column("caption", VARCHAR),
+                new Column("description", VARCHAR),
+                new Column("url", VARCHAR),
+                new Column("activation", VARCHAR),
+                new Column("ldapgroup", VARCHAR),
+            }){{
+                addRow(applicationToRow(1L, firstApp));
+            }},
+            new DefaultTable("DOMAIN_APPLICATION", new Column[]{
+                new Column("domain_pk", BIGINT),
+                new Column("application_pk", BIGINT)
+            }){{
+                addRow(new Object[] {1L, 1L});
+            }}
         });
         dbunitConn = new DatabaseConnection(dataSource.getConnection());
         DatabaseOperation.CLEAN_INSERT.execute(dbunitConn, dataSet);
@@ -124,12 +120,12 @@ public class TestDaos {
 
     @Test @Transactional
     public void testCreate() {
-        final Either<Exception, Domain> result = domaineDao.create(
-                Domain.of(Code.of("DOM2"),
-                          Caption.of("Domain 2"),
-                          some(firstDom),
-                          List.<Domain>nil(),
-                          list(firstApp)));
+        final Either<Exception, Domain> result =
+            domaineDao.create(Domain.of(Code.of("DOM2"),
+                                        Caption.of("Domain 2"),
+                                        some(firstDom),
+                                        List.<Domain>nil(),
+                                        list(firstApp)));
 
         for (Exception e: result.left()) {
             e.printStackTrace();
@@ -148,41 +144,34 @@ public class TestDaos {
         for (Exception e: result.left()) {
             e.printStackTrace();
             assertTrue(e instanceof NoSuchElementException
-                    ? "read appliquée à des valeurs correctes doit retourner une entité"
-                    : "read ne devrait pas lever d'exception", false);
+                       ? "read appliquée à des valeurs correctes doit retourner une entité"
+                       : "read ne devrait pas lever d'exception", false);
         }
 
         for (Domain domain : result.right())
             assertTrue("read doit retourner la bonne entité", domaineCompleteEq.eq(firstDom, domain));
     }
 
+    @SuppressWarnings("LoopStatementThatDoesntLoop")
     @Test
     public void testUpdate() throws SQLException {
         final Domain domToUpdate = firstDom
-                .withCaption(Caption.of("UPDATED Domain 1"))
-                .withApplications(single(firstApp));
+            .withCaption(Caption.of("UPDATED Domain 1"))
+            .withApplications(single(firstApp));
 
         final Either<Exception, Domain> dom =
-                new TransactionTemplate(transactionManager).execute(new TransactionCallback<Either<Exception, Domain>>() {
-            public Either<Exception, Domain> doInTransaction(TransactionStatus status) {
-                return domaineDao.update(domToUpdate);
-            }
-        });
+            new TransactionTemplate(transactionManager).execute(status -> domaineDao.update(domToUpdate));
 
         final Either<Exception, Domain> readDom =
-                new TransactionTemplate(transactionManager).execute(new TransactionCallback<Either<Exception, Domain>>() {
-                    public Either<Exception, Domain> doInTransaction(TransactionStatus status) {
-                        return domaineDao.read(firstDom.code());
-                    }
-                });
+            new TransactionTemplate(transactionManager).execute(status -> domaineDao.read(firstDom.code()));
 
         for (Exception e : dom.left().toList().append(readDom.left().toList()))
             throw new AssertionError(e);
 
         for (P2<Domain, Domain> pair : dom.right().toList().zip(readDom.right().toList())) {
             assertTrue("update doit mettre à jour les données",
-                    domaineCompleteEq.eq(domToUpdate, pair._2())
-                            && domaineCompleteEq.eq(pair._1(), pair._2()));
+                       domaineCompleteEq.eq(domToUpdate, pair._2())
+                       && domaineCompleteEq.eq(pair._1(), pair._2()));
         }
     }
 
@@ -199,35 +188,31 @@ public class TestDaos {
 
     private Object[] domaineToRow(Long pk, Domain domain) {
         return new Object[] {
-                pk,
-                domain.code().value(),
-                domain.caption().value(),
-                getParentPk(domain)
+            pk,
+            domain.code().value(),
+            domain.caption().value(),
+            getParentPk(domain)
         };
     }
 
     private Object[] applicationToRow(Long pk, Application application) {
         return new Object[] {
-                pk,
-                application.code().value(),
-                application.title().value(),
-                application.caption().value(),
-                application.description().value(),
-                application.url(),
-                application.activation().toString(),
-                application.group().value()
+            pk,
+            application.code().value(),
+            application.title().value(),
+            application.caption().value(),
+            application.description().value(),
+            application.url(),
+            application.activation().toString(),
+            application.group().value()
         };
     }
 
     private Long getParentPk(Domain domain) {
         return domain
-                .parent()
-                .map(new F<Domain, Long>() {
-                    public Long f(Domain parent) {
-                        return parent.pk().toNull();
-                    }
-                })
-                .toNull();
+            .parent()
+            .map(parent -> parent.pk().toNull())
+            .toNull();
     }
 
     private URL buildUrl(String url) {
