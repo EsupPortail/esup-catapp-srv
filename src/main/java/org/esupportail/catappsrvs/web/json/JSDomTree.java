@@ -19,8 +19,8 @@ public class JSDomTree {
     JSDomTree[] subDomains;
 
     @JsonCreator
-    public static JSDomTree jsDomTree(@JsonProperty("domain") JsDom domain,
-                                      @JsonProperty("subDomains") JSDomTree[] subDomains) {
+    public static JSDomTree of(@JsonProperty("domain") JsDom domain,
+                               @JsonProperty("subDomains") JSDomTree[] subDomains) {
         return new JSDomTree(domain, subDomains);
     }
 }

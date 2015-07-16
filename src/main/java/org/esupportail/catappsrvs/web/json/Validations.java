@@ -48,15 +48,7 @@ public final class Validations {
 
     public static Validation<String, JsApp.JsActivation> validAccess(JsApp.JsActivation access) {
         return validNotNull("activation", access)
-                .bind(new F<JsApp.JsActivation, Validation<String, JsApp.JsActivation>>() {
-                    public Validation<String, JsApp.JsActivation> f(JsApp.JsActivation activ) {
-                        return validNotEmpty("activation", activ.name()).map(new F<String, JsApp.JsActivation>() {
-                            public JsApp.JsActivation f(String s) {
-                                return JsApp.JsActivation.valueOf(s);
-                            }
-                        });
-                    }
-                });
+                .bind(activ -> validNotEmpty("activation", activ.name()).map(JsApp.JsActivation::valueOf));
     }
 
     public static Validation<String, String> validDescr(String descr) {

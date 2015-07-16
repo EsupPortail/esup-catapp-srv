@@ -5,15 +5,12 @@ import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.path.PathBuilder;
 import com.mysema.query.types.path.PathBuilderFactory;
-import fj.F;
-import fj.P1;
 import fj.Unit;
 import fj.data.Either;
 import fj.data.List;
 import org.esupportail.catappsrvs.model.HasCode;
 
 import javax.persistence.EntityManager;
-import java.util.NoSuchElementException;
 
 import static fj.Unit.unit;
 import static fj.data.Either.left;
@@ -55,16 +52,9 @@ abstract class CrudDao<T extends HasCode<T>> implements ICrudDao<T> {
     public final Either<Exception, T> read(final Code code) {
         try {
             return fromNull(from(ent).where(codePath.eq(code)).uniqueResult(ent))
-                    .toEither(new P1<Exception>() {
-                        public Exception _1() {
-                            return new NoSuchElementException("aucune entité trouvée de code : " + code);
-                        }})
+                    .toEither(() -> new Exception("aucune entité trouvée de code : " + code))
                     .right()
-                    .bind(new F<T, Either<Exception, T>>() {
-                        public Either<Exception, T> f(T t) {
-                            return refine(t);
-                        }
-                    });
+                    .bind(this::refine);
         } catch (Exception e) {
             return left(e);
         }
@@ -73,18 +63,10 @@ abstract class CrudDao<T extends HasCode<T>> implements ICrudDao<T> {
     @Override
     public final Either<Exception, List<T>> list() {
         try {
-            return Either.<Exception, List<T>>right(
-                    iterableList(from(ent).list(ent)))
-                    .right()
-                    .bind(new F<List<T>, Either<Exception, List<T>>>() {
-                        public Either<Exception, List<T>> f(List<T> ts) {
-                            return Either.sequenceRight(ts.map(new F<T, Either<Exception, T>>() {
-                                public Either<Exception, T> f(T t) {
-                                    return refine(t);
-                                }
-                            }));
-                        }
-                    });
+            return Either
+                .<Exception, List<T>>right(iterableList(from(ent).list(ent)))
+                .right()
+                .bind(ts -> Either.sequenceRight(ts.map(this::refine)));
         } catch (Exception e) {
             return left(e);
         }

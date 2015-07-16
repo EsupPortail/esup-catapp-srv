@@ -17,12 +17,12 @@ public class AppConf {
 
     @Bean @Inject
     public DomainResource domaineResource(IDomain domaineSrv) {
-        return DomainResource.domaineResource(domaineSrv);
+        return DomainResource.of(domaineSrv);
     }
 
     @Bean @Inject
     public ApplicationResource applicationResource(IApplication applicationSrv) {
-        return ApplicationResource.applicationResource(applicationSrv);
+        return ApplicationResource.of(applicationSrv);
     }
 }
 

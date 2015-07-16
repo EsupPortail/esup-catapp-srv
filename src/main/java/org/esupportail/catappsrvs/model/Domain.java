@@ -1,7 +1,6 @@
 package org.esupportail.catappsrvs.model;
 
 import fj.Equal;
-import fj.F;
 import fj.data.List;
 import fj.data.Option;
 import lombok.AccessLevel;
@@ -9,7 +8,6 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.Wither;
-import org.esupportail.catappsrvs.model.utils.Equals;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -17,33 +15,31 @@ import java.util.ArrayList;
 import static fj.data.List.iterableList;
 import static fj.data.Option.fromNull;
 import static javax.persistence.CascadeType.ALL;
-import static javax.persistence.CascadeType.MERGE;
-import static javax.persistence.CascadeType.PERSIST;
-import static org.esupportail.catappsrvs.model.CommonTypes.Code;
 import static org.esupportail.catappsrvs.model.CommonTypes.Caption;
+import static org.esupportail.catappsrvs.model.CommonTypes.Code;
 
 @EqualsAndHashCode(of = {"code"}, doNotUseGetters = true)
 @ToString(of = {"code", "caption"}, doNotUseGetters = true)
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = "code"))
 public final class Domain implements HasCode<Domain> {
     @Id @Column(name = "pk", nullable = false)
     @GeneratedValue(strategy= GenerationType.AUTO)
-	final Long pk;
+	Long pk;
 
     @Wither
     @Embedded @Column(nullable = false, length = 10)
-    final Code code;
+    Code code;
 
     @Embedded @Column(length = 200) @Wither
-    final Caption caption;
+    Caption caption;
 
     @ManyToOne(optional = true)
-    final Domain parent;
+    Domain parent;
 
     @OneToMany(mappedBy = "parent", cascade = ALL)
-    final java.util.List<Domain> domains;
+    java.util.List<Domain> domains;
 
     @ManyToMany
     @JoinTable(name="Domain_Application",
@@ -51,7 +47,7 @@ public final class Domain implements HasCode<Domain> {
             @JoinColumn(name="domain_pk", referencedColumnName="pk"),
             inverseJoinColumns=
             @JoinColumn(name="application_pk", referencedColumnName="pk"))
-    final java.util.List<Application> applications;
+    java.util.List<Application> applications;
 
     @SuppressWarnings("UnusedDeclaration")
     private Domain() { // for hibernate
@@ -77,11 +73,11 @@ public final class Domain implements HasCode<Domain> {
         this.applications = applications;
     }
 
-    public static Domain domain(Code code,
-                                Caption caption,
-                                Option<Domain> parent,
-                                List<Domain> sousDomaines,
-                                List<Application> applications) {
+    public static Domain of(Code code,
+                            Caption caption,
+                            Option<Domain> parent,
+                            List<Domain> sousDomaines,
+                            List<Application> applications) {
         return new Domain(null, code, caption, parent.toNull(),
                 new ArrayList<>(sousDomaines.toCollection()),
                 new ArrayList<>(applications.toCollection()));
@@ -111,4 +107,5 @@ public final class Domain implements HasCode<Domain> {
 
     public List<Application> applications() { return iterableList(applications); }
 
-}
+    public static final Equal<Domain> eq = Code.eq.contramap(Domain::code);
+ }

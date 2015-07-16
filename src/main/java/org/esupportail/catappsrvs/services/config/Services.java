@@ -26,13 +26,13 @@ public class Services {
     public IDomain domaineSrv(IDomainDao domaineDao,
                                PlatformTransactionManager txManager,
                                ILdap ldap) {
-        return DomainSrv.domaineSrv(domaineDao, txManager, ldap);
+        return DomainSrv.of(domaineDao, txManager, ldap);
     }
 
     @Bean @Inject
     public IApplication applicationSrv(IApplicationDao applicationDao,
                                        PlatformTransactionManager txManager) {
-        return ApplicationSrv.applicationSrv(applicationDao, txManager);
+        return ApplicationSrv.of(applicationDao, txManager);
     }
 
     @Configuration
@@ -57,7 +57,7 @@ public class Services {
 
         @Bean
         public ILdap ldapSrv() {
-            return LdapSrv.ldapSrv(baseDn, searchAttribute, ldap());
+            return LdapSrv.of(baseDn, searchAttribute, ldap());
         }
 
         private LDAPInterface ldap() {

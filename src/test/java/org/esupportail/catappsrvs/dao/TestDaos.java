@@ -14,8 +14,7 @@ import org.dbunit.dataset.DefaultTable;
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.operation.DatabaseOperation;
 import org.esupportail.catappsrvs.model.Application;
-import org.esupportail.catappsrvs.model.CommonTypes;
-import org.esupportail.catappsrvs.model.CommonTypes.LdapGroup;
+import org.esupportail.catappsrvs.model.CommonTypes.*;
 import org.esupportail.catappsrvs.model.Domain;
 import org.junit.After;
 import org.junit.Before;
@@ -42,15 +41,11 @@ import static fj.Bottom.error;
 import static fj.data.List.list;
 import static fj.data.List.single;
 import static fj.data.Option.some;
-import static org.dbunit.dataset.datatype.DataType.*;
+import static org.dbunit.dataset.datatype.DataType.BIGINT;
+import static org.dbunit.dataset.datatype.DataType.VARCHAR;
+import static org.esupportail.catappsrvs.dao.utils.Equals.domaineCompleteEq;
 import static org.esupportail.catappsrvs.model.Application.Activation.Activated;
-import static org.esupportail.catappsrvs.model.Application.*;
-import static org.esupportail.catappsrvs.model.CommonTypes.Caption.*;
-import static org.esupportail.catappsrvs.model.CommonTypes.Code.*;
-import static org.esupportail.catappsrvs.model.CommonTypes.Description.*;
-import static org.esupportail.catappsrvs.model.CommonTypes.Title.*;
-import static org.esupportail.catappsrvs.model.Domain.*;
-import static org.esupportail.catappsrvs.model.utils.Equals.domaineCompleteEq;
+import static org.esupportail.catappsrvs.model.Application.of;
 import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
@@ -72,22 +67,21 @@ public class TestDaos {
     IDatabaseConnection dbunitConn;
 
     private final Application firstApp =
-            application(
-                    code("APP1"),
-                    title("Application 1"),
-                    caption("L'appli 1"),
-                    description(""),
-                    buildUrl("http://toto.fr"),
-                    Activated,
-                    LdapGroup.of("UR1:57SI"),
-                    single(this.firstDom));
+            of(Code.of("APP1"),
+               Title.of("Application 1"),
+               Caption.of("L'appli 1"),
+               Description.of(""),
+               buildUrl("http://toto.fr"),
+               Activated,
+               LdapGroup.of("UR1:57SI"),
+               single(this.firstDom));
 
     private final Domain firstDom =
-            domain(code("DOM1"),
-                    caption("Domain 1"),
-                    Option.<Domain>some(null),
-                    List.<Domain>nil(),
-                    single(firstApp));
+            Domain.of(Code.of("DOM1"),
+                      Caption.of("Domain 1"),
+                      Option.<Domain>some(null),
+                      List.<Domain>nil(),
+                      single(firstApp));
 
     @Before
     public void setUp() throws DatabaseUnitException, SQLException {
@@ -131,22 +125,20 @@ public class TestDaos {
     @Test @Transactional
     public void testCreate() {
         final Either<Exception, Domain> result = domaineDao.create(
-                domain(code("DOM2"),
-                        caption("Domain 2"),
-                        some(firstDom),
-                        List.<Domain>nil(),
-                        list(firstApp)));
+                Domain.of(Code.of("DOM2"),
+                          Caption.of("Domain 2"),
+                          some(firstDom),
+                          List.<Domain>nil(),
+                          list(firstApp)));
 
         for (Exception e: result.left()) {
             e.printStackTrace();
             assertTrue("create ne devrait pas lever d'exception", false);
         }
 
-        for (Domain domain : result.right()) {
-            assertTrue(
-                    "create doit se traduire par l'affectation d'une clé primaire",
-                    domain.pk().isSome());
-        }
+        for (Domain domain : result.right())
+            assertTrue("create doit se traduire par l'affectation d'une clé primaire",
+                       domain.pk().isSome());
     }
 
     @Test
@@ -167,7 +159,7 @@ public class TestDaos {
     @Test
     public void testUpdate() throws SQLException {
         final Domain domToUpdate = firstDom
-                .withCaption(caption("UPDATED Domain 1"))
+                .withCaption(Caption.of("UPDATED Domain 1"))
                 .withApplications(single(firstApp));
 
         final Either<Exception, Domain> dom =

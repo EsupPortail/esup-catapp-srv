@@ -1,16 +1,26 @@
 package org.esupportail.catappsrvs.model;
 
-import lombok.Getter;
+import fj.Equal;
+import fj.Show;
+import fr.ur.data.Read;
 import lombok.Value;
+import lombok.experimental.Accessors;
 
-import static lombok.AccessLevel.NONE;
+import static fj.data.Option.fromString;
 
-@Value(staticConstructor = "user")
-@Getter(NONE)
+@Value(staticConstructor = "of")
+@Accessors(fluent = true)
 public class User {
-    public Uid uid;
+    Uid uid;
 
-    @Value(staticConstructor = "uid")
-    @Getter(NONE)
-    public static class Uid { public String value; }
+    public static final Equal<User> eq = Uid.eq.contramap(User::uid);
+
+    @Value(staticConstructor = "of")
+    public static class Uid {
+        String value;
+        public static final Read<Uid> read = repr -> fromString(repr).map(Uid::of);
+        public static final Show<Uid> show = Show.stringShow.contramap(Uid::value);
+        public static final Equal<Uid> eq = Equal.stringEqual.contramap(Uid::value);
+
+    }
 }

@@ -97,8 +97,7 @@ class Conf {
 
         @Bean(name = "JNDIDataSource")
         public DataSource jndiDataSource() {
-            JndiDataSourceLookup lookup = new JndiDataSourceLookup();
-            return lookup.getDataSource(jndiDatasourceName);
+            return new JndiDataSourceLookup().getDataSource(jndiDatasourceName);
         }
     }
 

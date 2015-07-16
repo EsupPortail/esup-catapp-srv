@@ -9,7 +9,7 @@ public final class ApplicationSrv extends Crud<Application, IApplicationDao> imp
         super(dao, txManager);
     }
 
-    public static ApplicationSrv applicationSrv(IApplicationDao dao, PlatformTransactionManager txManager) {
+    public static ApplicationSrv of(IApplicationDao dao, PlatformTransactionManager txManager) {
         return new ApplicationSrv(dao, txManager);
     }
 }

@@ -32,5 +32,5 @@ public class JsApp implements JsHasCode<Application> {
         return new JsApp(code, title, caption, url, description, group, activation, domains);
     }
 
-    public static enum JsActivation {Deactivated, Activated}
+    public enum JsActivation {Deactivated, Activated}
 }

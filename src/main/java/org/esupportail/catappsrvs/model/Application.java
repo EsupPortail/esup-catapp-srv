@@ -1,7 +1,6 @@
 package org.esupportail.catappsrvs.model;
 
 import fj.Equal;
-import fj.F;
 import fj.data.List;
 import fj.data.Option;
 import lombok.AccessLevel;
@@ -13,8 +12,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.Wither;
 
 import javax.persistence.*;
-import javax.persistence.Entity;
-import javax.persistence.Table;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -25,42 +22,42 @@ import static org.esupportail.catappsrvs.model.CommonTypes.*;
 @EqualsAndHashCode(of = "code", doNotUseGetters = true)
 @ToString(of = "code", doNotUseGetters = true)
 @Getter @Accessors(fluent = true)
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = "code"))
 public final class Application implements HasCode<Application> {
-    public static enum Activation { Activated, Deactivated }
+    public enum Activation { Activated, Deactivated }
 
     @Getter(AccessLevel.NONE)
     @Id @Column(name = "pk", nullable = false)
     @GeneratedValue(strategy= GenerationType.AUTO)
-    final Long pk;
+    Long pk;
 
     @Wither
     @Embedded @Column(nullable = false, length = 10)
-    final Code code;
+    Code code;
 
     @Embedded @Column(length = 200) @Wither
-    final Title title;
+    Title title;
 
     @Embedded @Column(length = 200) @Wither
-    final Caption caption;
+    Caption caption;
 
     @Embedded @Column(length = 3000) @Wither
-    final Description description;
+    Description description;
 
     @Column(length = 1000) @Wither
-    final URL url;
+    URL url;
 
     @Column @Enumerated(EnumType.STRING) @Wither
-    final Activation activation;
+    Activation activation;
 
     @Embedded @Column(length = 200) @Wither
-    final LdapGroup group;
+    LdapGroup group;
 
     @Getter(AccessLevel.NONE)
     @ManyToMany(mappedBy = "applications")
-    final java.util.List<Domain> domains;
+    java.util.List<Domain> domains;
 
     private Application() { // for hibernate
         pk = null;
@@ -97,14 +94,14 @@ public final class Application implements HasCode<Application> {
     /**
      * TODO : trop d'arguments => refactorer
      */
-    public static Application application(Code code,
-                                          Title title,
-                                          Caption caption,
-                                          Description description,
-                                          URL url,
-                                          Activation accessibility,
-                                          LdapGroup group,
-                                          List<Domain> domaines) {
+    public static Application of(Code code,
+                                 Title title,
+                                 Caption caption,
+                                 Description description,
+                                 URL url,
+                                 Activation accessibility,
+                                 LdapGroup group,
+                                 List<Domain> domaines) {
         return new Application(null, code, title, caption,
                 description, url, accessibility, group,
                 new ArrayList<>(domaines.toCollection()));
@@ -119,4 +116,6 @@ public final class Application implements HasCode<Application> {
     public Option<Long> pk() { return fromNull(pk); }
 
     public List<Domain> domains() { return iterableList(domains); }
+
+    public static final Equal<Application> eq = Code.eq.contramap(Application::code);
 }
