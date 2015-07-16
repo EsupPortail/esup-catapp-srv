@@ -24,7 +24,7 @@ import static org.esupportail.catappsrvs.web.utils.Functions.errorResponse;
 import static org.esupportail.catappsrvs.web.utils.Functions.fieldsException;
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
-public abstract class CrudResource<T, S extends ICrud<T>, J extends JsHasCode<T>> {
+public abstract class CrudResource<T, S extends ICrud<T>, J extends JsHasCode<J>> {
     protected final S srv;
 
     protected CrudResource(S srv) { this.srv = srv; }
@@ -111,7 +111,7 @@ public abstract class CrudResource<T, S extends ICrud<T>, J extends JsHasCode<T>
         return Info._(this, "update", code, json).log(() -> validCode(code)
             .nel().f()
             .map(Functions.fieldsException).nel()
-            .bind(validCode -> validAndBuild(json.<J>withCode(validCode))
+            .bind(validCode -> validAndBuild(json.withCode(validCode))
                 .nel()
                 .bind(validT -> validation(srv.update(validT))
                     .nel()

@@ -95,7 +95,8 @@ public class SpringComponentProvider implements ComponentProvider {
             }
             String beanName = beanNames[0];
 
-            ServiceBindingBuilder bb = Injections.newFactoryBinder(new SpringComponentProvider.SpringManagedBeanFactory(ctx, locator, beanName));
+            ServiceBindingBuilder<?> bb =
+                Injections.newFactoryBinder(new SpringManagedBeanFactory(ctx, locator, beanName));
             bb.to(component);
             Injections.addBinding(bb, c);
             c.commit();
@@ -111,7 +112,7 @@ public class SpringComponentProvider implements ComponentProvider {
     }
 
 
-    private static class SpringManagedBeanFactory implements Factory {
+    private static class SpringManagedBeanFactory implements Factory<Object> {
         private final ApplicationContext ctx;
         private final ServiceLocator locator;
         private final String beanName;

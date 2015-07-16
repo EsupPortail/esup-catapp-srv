@@ -15,7 +15,7 @@ import static org.codehaus.jackson.annotate.JsonAutoDetect.Visibility.ANY;
 @Value @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @JsonAutoDetect(fieldVisibility = ANY)
 @Accessors(fluent = true) @Wither
-public class JsApp implements JsHasCode<Application> {
+public class JsApp implements JsHasCode<JsApp> {
     String code, title, caption, url, description, group;
     JsActivation activation;
     String[] domains;
