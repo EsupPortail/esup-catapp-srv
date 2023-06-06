@@ -3,6 +3,7 @@ package org.esupportail.catappsrvs.services.ldap;
 import com.unboundid.ldap.sdk.*;
 import fj.data.Either;
 import fj.data.List;
+import fj.data.Option;
 import lombok.Value;
 import org.esupportail.catappsrvs.model.User;
 
@@ -24,16 +25,18 @@ public class LdapSrv implements ILdap {
         try {
             final SearchRequest request =
                     new SearchRequest(baseDn, SearchScope.ONE, uidFilter, searchAttribute);
-            final java.util.List<SearchResultEntry> results =
-                    ldap.search(request).getSearchEntries();
-            return iif(!results.isEmpty(),
-                       () -> iterableList(results.get(0).getAttributes())
-                           .bind(attribute -> array(attribute.getValues())
-                               .map(LdapGroup::of)
-                               .toList()),
-                       () -> new Exception("Aucune entrée dans le ldap ne correspond à " + user));
+
+            return Option.fromNull(ldap.searchForEntry(request))
+
+                    .bind(entry -> Option.fromNull(entry.getAttribute(searchAttribute)))
+
+                    .map(attribute -> array(attribute.getValues())
+                            .map(v -> LdapGroup.of(v.toLowerCase()))
+                            .toList())
+
+                    .toEither(() -> new Exception("Aucune entrée dans le ldap ne correspond à " + user.uid().value()));
         } catch (LDAPException e) {
-            return left((Exception) e);
+            return left(e);
         }
     }
 }

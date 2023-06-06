@@ -8,6 +8,8 @@ import org.esupportail.catappsrvs.model.QDomain;
 
 import javax.persistence.EntityManager;
 
+import java.util.Comparator;
+
 import static fj.P.p;
 import static fj.data.Either.left;
 import static fj.data.Either.right;
@@ -176,8 +178,8 @@ public final class DomainDao extends CrudDao<Domain> implements IDomainDao {
                 final Either<Exception, Domain> newNode =
                     maybeNode.right().bind(dom1 -> {
                         try {
-                            final List<Application> apps =
-                                dom1.applications().filter(app -> groups.exists(LdapGroup.eq.eq(app.group())));
+                            final List<Application> apps = dom1.applications()
+                                    .filter(app -> groups.exists(g -> g.value().equalsIgnoreCase(app.group().value())));
                             final List<Domain> doms = dom1.domains();
                             return right(dom1.withDomains(doms).withApplications(apps));
                         } catch (Exception e) {
@@ -198,7 +200,7 @@ public final class DomainDao extends CrudDao<Domain> implements IDomainDao {
             appsFilteredTree.right().map(tdoms -> Tree.bottomUp(tdoms, P2
                 .tuple(dom1 -> subDoms -> dom1.applications().isEmpty() && subDoms.isEmpty()
                                           ? Option.<Domain>none()
-                                          : some(dom1.withDomains(subDoms.toList().map(d -> d.some()))))));
+                                          : some(dom1.withDomains(Option.somes(subDoms.toList()))))));
 
         Debug._(this, "findDomaines", code, groups)
              .effect(() -> "\n" +
