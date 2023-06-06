@@ -1,6 +1,9 @@
 package org.esupportail.catappsrvs.services.config;
 
 import com.unboundid.ldap.sdk.*;
+import com.unboundid.ldap.sdk.extensions.StartTLSExtendedRequest;
+import com.unboundid.util.ssl.SSLUtil;
+import com.unboundid.util.ssl.TrustAllTrustManager;
 import org.esupportail.catappsrvs.dao.IApplicationDao;
 import org.esupportail.catappsrvs.dao.IDomainDao;
 import org.esupportail.catappsrvs.dao.config.Daos;
@@ -17,6 +20,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.inject.Inject;
+import javax.net.ssl.SSLContext;
+import java.security.GeneralSecurityException;
 
 @Configuration
 @Import(Daos.class)
@@ -56,14 +61,27 @@ public class Services {
         private String searchAttribute;
 
         @Bean
-        public ILdap ldapSrv() {
-            return LdapSrv.of(baseDn, searchAttribute, ldap());
+        @Inject
+        public ILdap ldapSrv(LDAPInterface ldap) {
+            return LdapSrv.of(baseDn, searchAttribute, ldap);
         }
 
-        private LDAPInterface ldap() {
-            return new LDAPThreadLocalConnectionPool(
-                    new SingleServerSet(server, port),
-                    new SimpleBindRequest(username, password));
+        @Bean(destroyMethod = "close")
+        public FullLDAPInterface ldap() throws LDAPException, GeneralSecurityException {
+            final SingleServerSet serverSet = new SingleServerSet(server, port);
+
+            final SSLUtil sslUtil = new SSLUtil(new TrustAllTrustManager(true));
+            final SSLContext sslContext = sslUtil.createSSLContext();
+            final ExtendedResult extendedResult =
+                    serverSet.getConnection().processExtendedOperation(new StartTLSExtendedRequest(sslContext));
+
+            if (!extendedResult.getResultCode().equals(ResultCode.SUCCESS))
+                throw new LDAPException(extendedResult.getResultCode());
+
+            final StartTLSPostConnectProcessor startTLS = new StartTLSPostConnectProcessor(sslContext);
+            final BindRequest bindRequest = new SimpleBindRequest(username, password);
+
+            return new LDAPConnectionPool(serverSet, bindRequest, 1, 20, startTLS);
         }
     }
 }
