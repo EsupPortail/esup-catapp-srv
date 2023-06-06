@@ -27,6 +27,26 @@
                 <enabled>true</enabled>
             </releases>
         </repository>
+        <repository>
+            <id>nexus.univ-rennes1.fr</id>
+            <url>https://nexus.univ-rennes1.fr/repository/releases/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>nexus.univ-rennes1.fr_thirdparty</id>
+            <url>https://nexus.univ-rennes1.fr/repository/thirdparty/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
     </repositories>
     <distributionManagement>
         <repository>
@@ -269,7 +289,7 @@
             <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
-                <version>5.1.27</version>
+                <version>5.1.49</version>
             </dependency>
             <dependency>
                 <groupId>com.mysema.querydsl</groupId>
@@ -284,7 +304,7 @@
             <dependency>
                 <groupId>com.unboundid</groupId>
                 <artifactId>unboundid-ldapsdk</artifactId>
-                <version>2.3.6</version>
+                <version>6.0.8</version>
             </dependency>
             <!-- Spring -->
             <dependency>
