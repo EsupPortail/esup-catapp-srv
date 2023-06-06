@@ -131,11 +131,10 @@ class Conf {
     }
 
     @Bean
-    public SpringLiquibase liquibase() throws LiquibaseException {
+    public SpringLiquibase liquibase(DataSource dataSource) throws LiquibaseException {
         final SpringLiquibase liquibase = new SpringLiquibase();
         liquibase.setDataSource(dataSource);
-        liquibase.setChangeLog
-                ("classpath:/db/changelogs/master.changelog.xml");
+        liquibase.setChangeLog("classpath:/db/changelogs/master.changelog.xml");
         return liquibase;
     }
 }
