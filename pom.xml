@@ -50,15 +50,9 @@
     </repositories>
     <distributionManagement>
         <repository>
-            <id>mvn.esup-portail.org</id>
-            <name>esup-portail</name>
-            <url>https://mvn.esup-portail.org/content/repositories/releases</url>
+            <id>nexus.univ-rennes1.fr_thirdparty</id>
+            <url>https://nexus.univ-rennes1.fr/repository/thirdparty/</url>
         </repository>
-        <snapshotRepository>
-            <id>mvn.esup-portail.org</id>
-            <name>esup-portail</name>
-            <url>https://mvn.esup-portail.org/content/repositories/snapshots</url>
-        </snapshotRepository>
         <site>
             <id>site-docs</id>
             <url>${site.url}</url>
